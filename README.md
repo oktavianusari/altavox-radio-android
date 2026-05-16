@@ -8,7 +8,7 @@
 
 **AltaVox Radio** is a Transistor inspired streaming radio application that allows users to listen to online radio stations with a flexible, lightweight, and highly customizable experience. The app is designed to provide stable streaming playback, dynamic radio playlist management, and a comfortable user interface suitable for different lighting conditions across mobile devices and Android TV.
 
-> This application is only a streaming radio player. M3U playlists are independently provided by users and can be entered through the **Remote M3U Update** field.
+> This application is only a streaming radio player. Screenshots shown are for illustration purposes only. Users must independently prepare and host their own `.m3u` playlist files. The application developer is not responsible for the content, broadcasts, or materials contained within user-provided `.m3u` playlists.
 
 ## ✨ Main Features
 
@@ -70,7 +70,7 @@ This project is licensed under the MIT License.
 
 **AltaVox Radio** adalah aplikasi radio streaming terinspirasi dari Transistor yang memungkinkan pengguna mendengarkan stasiun radio online dengan pengalaman yang fleksibel, ringan, dan sangat dapat dikustomisasi. Aplikasi ini dirancang untuk memberikan pemutaran streaming yang stabil, pengelolaan playlist radio yang dinamis, serta antarmuka yang nyaman digunakan pada perangkat mobile maupun Android TV.
 
-> Aplikasi ini hanya merupakan pemutar radio streaming. Playlist M3U disediakan secara mandiri oleh pengguna dan dapat diinput melalui field **Remote M3U Update**.
+> Aplikasi ini hanya merupakan pemutar URL streaming. Screenshot yang ditampilkan hanya sebagai ilustrasi. Pengguna wajib menyiapkan dan meng-host file playlist `.m3u` secara mandiri. Pengembang aplikasi tidak bertanggung jawab atas konten, siaran, maupun isi dari file `.m3u` yang digunakan oleh pengguna.
 
 ## ✨ Fitur Utama
 
