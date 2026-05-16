@@ -1,12 +1,16 @@
 # AltaVox Radio
 
-**AltaVox Radio** is a Transistor inspired streaming radio application that allows users to listen to online radio stations with a flexible, lightweight, and highly customizable experience. The app is designed to provide stable streaming playback, dynamic radio playlist management, and a comfortable user interface suitable for different lighting conditions.
+**AltaVox Radio** is a Transistor inspired streaming radio application that allows users to listen to online radio stations with a flexible, lightweight, and highly customizable experience. The app is designed to provide stable streaming playback, dynamic radio playlist management, and a comfortable user interface suitable for different lighting conditions across mobile devices and Android TV.
 
 ## ✨ Main Features
 
 ### 🔗 Dynamic M3U Playlist Loader
 
 Load radio playlists from `.m3u` files hosted on your own server. Playlists can be updated anytime from the server without requiring an app update.
+
+### 📺 Android TV Support
+
+Designed with Android TV compatibility in mind, allowing users to enjoy internet radio on large screens with a TV-friendly interface and remote control navigation support.
 
 ### 🎨 Flexible Theme System
 
@@ -40,6 +44,7 @@ AltaVox Radio is built to provide an internet radio listening experience that is
 * Modern
 * Personalized
 * Easy to manage
+* Comfortable across mobile and TV platforms
 
 This application is suitable for both general users and streaming radio communities who want to manage radio playlists independently through their own server.
 
