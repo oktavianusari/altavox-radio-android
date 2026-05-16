@@ -1,0 +1,70 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- Antenna stick -->
+    <path
+        android:pathData="M 28 35 L 75 15"
+        android:strokeColor="#9E9E9E"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"/>
+
+    <!-- Antenna tip -->
+    <path
+        android:pathData="M 75 12 A 3 3 0 1 1 75 18 A 3 3 0 1 1 75 12"
+        android:fillColor="#9E9E9E"/>
+
+    <!-- Antenna dome (base) -->
+    <path
+        android:pathData="M 20 35 C 20 27, 36 27, 36 35 Z"
+        android:fillColor="#CCCCCC"/>
+
+    <!-- Left Foot -->
+    <path
+        android:pathData="M 20 80 A 5 5 0 0 1 30 80 Z" 
+        android:fillColor="#333333"/>
+        
+    <!-- Right Foot -->
+    <path
+        android:pathData="M 70 80 A 5 5 0 0 1 80 80 Z" 
+        android:fillColor="#333333"/>
+
+    <!-- Main Body -->
+    <path
+        android:pathData="M 15 35 L 85 35 Q 90 35 90 40 L 90 75 Q 90 80 85 80 L 15 80 Q 10 80 10 75 L 10 40 Q 10 35 15 35 Z"
+        android:fillColor="#9E9E9E"/>
+
+    <!-- Grill Lines -->
+    <path
+        android:pathData="
+        M 17 41 L 51 41 Q 53 41 53 43 L 53 44 Q 53 46 51 46 L 17 46 Q 15 46 15 44 L 15 43 Q 15 41 17 41 Z
+        M 17 48 L 51 48 Q 53 48 53 50 L 53 51 Q 53 53 51 53 L 17 53 Q 15 53 15 51 L 15 50 Q 15 48 17 48 Z
+        M 17 55 L 51 55 Q 53 55 53 57 L 53 58 Q 53 60 51 60 L 17 60 Q 15 60 15 58 L 15 57 Q 15 55 17 55 Z
+        M 17 62 L 51 62 Q 53 62 53 64 L 53 65 Q 53 67 51 67 L 17 67 Q 15 67 15 65 L 15 64 Q 15 62 17 62 Z
+        M 17 69 L 51 69 Q 53 69 53 71 L 53 72 Q 53 74 51 74 L 17 74 Q 15 74 15 72 L 15 71 Q 15 69 17 69 Z
+        "
+        android:fillColor="#333333"/>
+
+    <!-- Display Window -->
+    <path
+        android:pathData="M 57 40 L 83 40 Q 86 40 86 43 L 86 57 Q 86 60 83 60 L 57 60 Q 54 60 54 57 L 54 43 Q 54 40 57 40 Z"
+        android:fillColor="#85C7FA"/>
+
+    <!-- Display Pointer (Red) -->
+    <path
+        android:pathData="M 60 46 L 64 46 Q 65 46 65 47 L 65 58 Q 65 59 64 59 L 60 59 Q 59 59 59 58 L 59 47 Q 59 46 60 46 Z"
+        android:fillColor="#F44336"/>
+
+    <!-- Left Knob -->
+    <path
+        android:pathData="M 63 66 A 4 4 0 1 1 63 74 A 4 4 0 1 1 63 66"
+        android:fillColor="#FFFFFF"/>
+
+    <!-- Right Knob -->
+    <path
+        android:pathData="M 77 66 A 4 4 0 1 1 77 74 A 4 4 0 1 1 77 66"
+        android:fillColor="#FFFFFF"/>
+
+</vector>
