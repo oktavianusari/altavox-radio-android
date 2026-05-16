@@ -65,6 +65,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // Detect if running on TV and redirect to TvActivity
+        val uiModeManager = getSystemService(android.content.Context.UI_MODE_SERVICE) as android.app.UiModeManager
+        if (uiModeManager.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION) {
+            startActivity(Intent(this, TvActivity::class.java))
+            finish()
+            return
+        }
+
         // Start foreground service if needed or let ExoPlayer handle it
         val intent = Intent(this, RadioPlaybackService::class.java)
         startService(intent)
