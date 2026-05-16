@@ -43,16 +43,6 @@ AltaVox Radio is built to provide an internet radio listening experience that is
 
 This application is suitable for both general users and streaming radio communities who want to manage radio playlists independently through their own server.
 
-## 🛠️ Planned Improvements
-
-* Favorite radio stations
-* Search and filter radio stations
-* Sleep timer
-* Background playback
-* Notification player controls
-* Equalizer support
-* Offline cached playlist
-
 ## 📄 Playlist Format
 
 AltaVox Radio supports the standard `.m3u` playlist format, making it compatible with many internet radio services and media applications.
