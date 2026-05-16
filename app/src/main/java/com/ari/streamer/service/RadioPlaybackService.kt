@@ -13,8 +13,10 @@ import android.net.Uri
 import androidx.core.graphics.drawable.toBitmap
 import androidx.media3.common.util.BitmapLoader
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.extractor.DefaultExtractorsFactory
+import androidx.media3.extractor.ts.AdtsExtractor
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.ari.streamer.data.UserPreferences
@@ -23,14 +25,45 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import okhttp3.Cookie
+import okhttp3.CookieJar
+import okhttp3.HttpUrl
+import okhttp3.OkHttpClient
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import java.util.concurrent.TimeUnit
 
 @UnstableApi
 class RadioPlaybackService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
     private var player: ExoPlayer? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
+    // Robust cookie jar that handles domain/path matching correctly
+    private val cookieJar = object : CookieJar {
+        private val cookieStore = mutableListOf<Cookie>()
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
+            // Remove old cookies for the same name and domain to avoid bloat
+            cookies.forEach { cookie ->
+                cookieStore.removeAll { it.name == cookie.name && it.domain == cookie.domain }
+            }
+            cookieStore.addAll(cookies)
+        }
+        override fun loadForRequest(url: HttpUrl): List<Cookie> {
+            // Use OkHttp's built-in matching logic
+            return cookieStore.filter { it.matches(url) }
+        }
+    }
+
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .cookieJar(cookieJar)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -44,29 +77,33 @@ class RadioPlaybackService : MediaSessionService() {
 
     @UnstableApi
     private fun initializePlayer(useLargerBuffer: Boolean) {
-        val loadControl = if (useLargerBuffer) {
-            DefaultLoadControl.Builder()
-                .setBufferDurationsMs(
-                    DefaultLoadControl.DEFAULT_MIN_BUFFER_MS * 4,
-                    DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 4,
-                    DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS * 2,
-                    DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS * 2
-                ).build()
-        } else {
-            DefaultLoadControl()
-        }
-
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                5_000,  // min buffer 5s (more responsive for live)
+                30_000, // max buffer 30s
+                1_000,  // buffer for playback 1s
+                2_000   // buffer after rebuffer 2s
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
         val audioAttributes = AudioAttributes.Builder()
             .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
             .setUsage(C.USAGE_MEDIA)
             .build()
 
-        // Set a generic User-Agent for standard web radios that block ExoPlayer default UA
-        val dataSourceFactory = DefaultHttpDataSource.Factory()
-            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36")
-            .setAllowCrossProtocolRedirects(true)
+        // Use OkHttpDataSource for better redirection and cookie handling
+        val dataSourceFactory = OkHttpDataSource.Factory(okHttpClient)
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
+            .setDefaultRequestProperties(mapOf(
+                "Accept" to "*/*",
+                "Connection" to "keep-alive"
+            ))
 
-        val mediaSourceFactory = DefaultMediaSourceFactory(this)
+        // Configure ADTS extractor to be more resilient to VBR and sync issues
+        val extractorsFactory = DefaultExtractorsFactory()
+            .setAdtsExtractorFlags(AdtsExtractor.FLAG_ENABLE_CONSTANT_BITRATE_SEEKING)
+
+        val mediaSourceFactory = DefaultMediaSourceFactory(this, extractorsFactory)
             .setDataSourceFactory(dataSourceFactory)
 
         player = ExoPlayer.Builder(this)
@@ -109,8 +146,32 @@ class RadioPlaybackService : MediaSessionService() {
             mediaItems: MutableList<MediaItem>
         ): ListenableFuture<MutableList<MediaItem>> {
             val updatedMediaItems = mediaItems.map { item ->
-                val uri = item.requestMetadata.mediaUri
+                var uri = item.localConfiguration?.uri ?: item.requestMetadata.mediaUri
+                
                 if (uri != null) {
+                    var uriString = uri.toString()
+                    
+                    if (uriString.contains("streamtheworld.com")) {
+                        // Force FLV container by removing extensions. FLV handles ad-to-stream 
+                        // transitions (MP3 to AAC) much better than raw ADTS (.aac) files.
+                        uriString = uriString
+                            .replace(".aac", "")
+                            .replace(".mp3", "")
+                            .replace("GOLD905AAC", "GOLD905")
+                            .replace("SYMPHONY924AAC", "SYMPHONY924")
+                            .replace("ONE_FM_913AAC", "ONE_FM_913")
+                        
+                        // Add stability and SDK identification parameters
+                        if (!uriString.contains("dist=")) {
+                            val separator = if (uriString.contains("?")) "&" else "?"
+                            uriString += "${separator}dist=triton_player_sdk&sb=1"
+                        } else if (!uriString.contains("sb=")) {
+                            uriString += "&sb=1"
+                        }
+                        
+                        uri = Uri.parse(uriString)
+                    }
+                    
                     item.buildUpon()
                         .setMediaId(item.mediaId)
                         .setUri(uri)
