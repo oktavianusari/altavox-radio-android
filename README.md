@@ -1,6 +1,14 @@
 # AltaVox Radio
 
+[🇮🇩 Lompat ke Bahasa Indonesia](#-bahasa-indonesia)
+
+---
+
+## 🇬🇧 English
+
 **AltaVox Radio** is a Transistor inspired streaming radio application that allows users to listen to online radio stations with a flexible, lightweight, and highly customizable experience. The app is designed to provide stable streaming playback, dynamic radio playlist management, and a comfortable user interface suitable for different lighting conditions across mobile devices and Android TV.
+
+> This application is only a streaming radio player. M3U playlists are independently provided by users and can be entered through the **Remote M3U Update** field.
 
 ## ✨ Main Features
 
@@ -16,9 +24,9 @@ Designed with Android TV compatibility in mind, allowing users to enjoy internet
 
 Supports:
 
-* Light Theme
-* Dark Theme
-* Follow System Theme
+- Light Theme
+- Dark Theme
+- Follow System Theme
 
 ### 🌈 Custom Color Scheme
 
@@ -40,11 +48,11 @@ Uses a larger streaming buffer to reduce buffering issues and maintain more stab
 
 AltaVox Radio is built to provide an internet radio listening experience that is:
 
-* Stable
-* Modern
-* Personalized
-* Easy to manage
-* Comfortable across mobile and TV platforms
+- Stable
+- Modern
+- Personalized
+- Easy to manage
+- Comfortable across mobile and TV platforms
 
 This application is suitable for both general users and streaming radio communities who want to manage radio playlists independently through their own server.
 
@@ -55,3 +63,65 @@ AltaVox Radio supports the standard `.m3u` playlist format, making it compatible
 ## 📌 License
 
 This project is licensed under the MIT License.
+
+---
+
+# 🇮🇩 Bahasa Indonesia
+
+**AltaVox Radio** adalah aplikasi radio streaming terinspirasi dari Transistor yang memungkinkan pengguna mendengarkan stasiun radio online dengan pengalaman yang fleksibel, ringan, dan sangat dapat dikustomisasi. Aplikasi ini dirancang untuk memberikan pemutaran streaming yang stabil, pengelolaan playlist radio yang dinamis, serta antarmuka yang nyaman digunakan pada perangkat mobile maupun Android TV.
+
+> Aplikasi ini hanya merupakan pemutar radio streaming. Playlist M3U disediakan secara mandiri oleh pengguna dan dapat diinput melalui field **Remote M3U Update**.
+
+## ✨ Fitur Utama
+
+### 🔗 Dynamic M3U Playlist Loader
+
+Memuat playlist radio dari file `.m3u` yang dihosting di server milik pengguna. Playlist dapat diperbarui kapan saja tanpa perlu melakukan update aplikasi.
+
+### 📺 Dukungan Android TV
+
+Dirancang kompatibel dengan Android TV sehingga pengguna dapat menikmati radio internet pada layar besar dengan navigasi remote yang nyaman.
+
+### 🎨 Sistem Tema Fleksibel
+
+Mendukung:
+
+- Tema Terang
+- Tema Gelap
+- Mengikuti Tema Sistem
+
+### 🌈 Kustomisasi Warna
+
+Pengguna dapat mengatur skema warna berbeda untuk mode terang dan gelap sesuai preferensi masing-masing.
+
+### 📂 Kategorisasi Radio
+
+Stasiun radio dapat dikelompokkan ke dalam kategori dan kategori dapat diubah secara bebas sesuai kebutuhan pengguna.
+
+### 📥 Import & Export Playlist
+
+Mendukung impor dan ekspor playlist `.m3u` untuk memudahkan backup dan berbagi playlist.
+
+### 📡 Streaming Buffer Optimal
+
+Menggunakan buffer streaming yang lebih besar untuk mengurangi buffering dan menjaga kestabilan pemutaran audio.
+
+## 🚀 Tujuan Proyek
+
+AltaVox Radio dikembangkan untuk memberikan pengalaman mendengarkan radio internet yang:
+
+- Stabil
+- Modern
+- Personal
+- Mudah dikelola
+- Nyaman digunakan di perangkat mobile maupun TV
+
+Aplikasi ini cocok digunakan oleh pengguna umum maupun komunitas radio streaming yang ingin mengelola playlist radio secara mandiri melalui server mereka sendiri.
+
+## 📄 Format Playlist
+
+AltaVox Radio mendukung format playlist standar `.m3u` sehingga kompatibel dengan berbagai layanan radio internet dan aplikasi media lainnya.
+
+## 📌 Lisensi
+
+Proyek ini menggunakan lisensi MIT.
