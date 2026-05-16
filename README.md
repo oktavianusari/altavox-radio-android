@@ -1,6 +1,6 @@
 # AltaVox Radio
 
-[🇮🇩 Lompat ke Bahasa Indonesia](#-bahasa-indonesia)
+[🇮🇩 Langsung ke Deskripsi Bahasa Indonesia](#-bahasa-indonesia)
 
 ---
 
