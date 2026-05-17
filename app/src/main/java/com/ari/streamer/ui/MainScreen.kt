@@ -28,6 +28,10 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.ari.streamer.R
 import com.ari.streamer.data.Station
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -205,7 +209,11 @@ fun StationItem(station: Station, onClick: () -> Unit, onLongClick: () -> Unit) 
                 .fallback(R.drawable.ic_launcher)
                 .build(),
             contentDescription = null,
-            modifier = Modifier.size(48.dp)
+            modifier = Modifier
+                .size(48.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
         )
         Spacer(modifier = Modifier.width(16.dp))
         Text(text = station.name, style = MaterialTheme.typography.bodyLarge)
@@ -239,7 +247,11 @@ fun NowPlayingBar(
                     .fallback(R.drawable.ic_launcher)
                     .build(),
                 contentDescription = null,
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {

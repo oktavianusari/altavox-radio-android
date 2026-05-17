@@ -20,11 +20,15 @@ import androidx.media3.extractor.ts.AdtsExtractor
 import coil.imageLoader
 import coil.request.ImageRequest
 import com.ari.streamer.data.UserPreferences
+import com.ari.streamer.data.AppDatabase
+import com.ari.streamer.data.Station
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -35,6 +39,15 @@ import java.util.concurrent.TimeUnit
 
 @UnstableApi
 class RadioPlaybackService : MediaSessionService() {
+
+    companion object {
+        const val ACTION_PLAY_PAUSE = "com.ari.streamer.service.ACTION_PLAY_PAUSE"
+        const val ACTION_NEXT = "com.ari.streamer.service.ACTION_NEXT"
+        const val ACTION_PREVIOUS = "com.ari.streamer.service.ACTION_PREVIOUS"
+        const val ACTION_PLAY_STATION = "com.ari.streamer.service.ACTION_PLAY_STATION"
+        const val EXTRA_STATION_ID = "extra_station_id"
+    }
+
     private var mediaSession: MediaSession? = null
     private var player: ExoPlayer? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -113,10 +126,172 @@ class RadioPlaybackService : MediaSessionService() {
             .setHandleAudioBecomingNoisy(true)
             .build()
 
+        player!!.addListener(object : androidx.media3.common.Player.Listener {
+            override fun onEvents(player: androidx.media3.common.Player, events: androidx.media3.common.Player.Events) {
+                if (events.containsAny(
+                        androidx.media3.common.Player.EVENT_IS_PLAYING_CHANGED,
+                        androidx.media3.common.Player.EVENT_MEDIA_METADATA_CHANGED,
+                        androidx.media3.common.Player.EVENT_PLAYBACK_STATE_CHANGED
+                    )) {
+                    broadcastWidgetState()
+                }
+            }
+        })
+
         mediaSession = MediaSession.Builder(this, player!!)
             .setCallback(CustomMediaSessionCallback())
             .setBitmapLoader(CoilBitmapLoader())
             .build()
+    }
+
+    private fun broadcastWidgetState() {
+        val currentPlayer = player ?: return
+        val metadata = currentPlayer.currentMediaItem?.mediaMetadata
+        val title = metadata?.title?.toString() ?: metadata?.displayTitle?.toString() ?: "AltaVox Radio"
+        val logoUrl = metadata?.artworkUri?.toString()
+        val isPlaying = currentPlayer.isPlaying
+
+        // Fetch dynamic audio format details
+        val audioFormat = currentPlayer.audioFormat
+        val mimeType = audioFormat?.sampleMimeType
+        val bitrate = audioFormat?.bitrate ?: -1
+        
+        val formatName = when {
+            mimeType?.contains("mpeg", ignoreCase = true) == true -> "MP3"
+            mimeType?.contains("mp4", ignoreCase = true) == true || mimeType?.contains("aac", ignoreCase = true) == true -> "AAC"
+            mimeType?.contains("ogg", ignoreCase = true) == true || mimeType?.contains("opus", ignoreCase = true) == true -> "Opus"
+            mimeType?.contains("flac", ignoreCase = true) == true -> "FLAC"
+            else -> "MP3"
+        }
+        
+        val bitrateKbps = if (bitrate > 0) "${bitrate / 1000} kbps" else "128 kbps"
+        val formatBitrate = "$formatName • $bitrateKbps"
+
+        val intent = Intent("com.ari.streamer.widget.ACTION_UPDATE_STATE").apply {
+            setPackage(packageName)
+            putExtra("extra_station_name", title)
+            putExtra("extra_is_playing", isPlaying)
+            putExtra("extra_logo_url", logoUrl)
+            putExtra("extra_format_bitrate", formatBitrate)
+        }
+        sendBroadcast(intent)
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val action = intent?.action
+        if (action != null) {
+            when (action) {
+                ACTION_PLAY_PAUSE -> {
+                    val currentPlayer = player
+                    if (currentPlayer != null) {
+                        if (currentPlayer.isPlaying) currentPlayer.pause() else currentPlayer.play()
+                    } else {
+                        // Cold start: wait for player initialization and automatically start playback
+                        serviceScope.launch {
+                            var p = player
+                            for (i in 1..15) {
+                                if (p != null) break
+                                delay(200)
+                                p = player
+                            }
+                            if (p != null) {
+                                if (p.isPlaying) {
+                                    p.pause()
+                                } else if (p.mediaItemCount > 0) {
+                                    p.play()
+                                } else {
+                                    val db = AppDatabase.getDatabase(this@RadioPlaybackService)
+                                    val stations = db.stationDao().getAllStations().first()
+                                    if (stations.isNotEmpty()) {
+                                        playStationOnPlayer(stations.first())
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                ACTION_NEXT -> {
+                    skipStation(true)
+                }
+                ACTION_PREVIOUS -> {
+                    skipStation(false)
+                }
+                ACTION_PLAY_STATION -> {
+                    val stationId = intent.getLongExtra(EXTRA_STATION_ID, -1L)
+                    if (stationId != -1L) {
+                        playStationById(stationId)
+                    }
+                }
+            }
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun playStationById(stationId: Long) {
+        serviceScope.launch(Dispatchers.IO) {
+            val db = AppDatabase.getDatabase(this@RadioPlaybackService)
+            val stations = db.stationDao().getAllStations().first()
+            val station = stations.find { it.id == stationId } ?: return@launch
+            withContext(Dispatchers.Main) {
+                playStationOnPlayer(station)
+            }
+        }
+    }
+
+    private fun skipStation(forward: Boolean) {
+        serviceScope.launch(Dispatchers.IO) {
+            val db = AppDatabase.getDatabase(this@RadioPlaybackService)
+            val stations = db.stationDao().getAllStations().first()
+            if (stations.isEmpty()) return@launch
+
+            var currentPlayer = player
+            for (i in 1..10) {
+                if (currentPlayer != null) break
+                delay(200)
+                currentPlayer = player
+            }
+            if (currentPlayer == null) return@launch
+
+            val (currentStationId, currentStreamUrl) = withContext(Dispatchers.Main) {
+                Pair(
+                    currentPlayer.currentMediaItem?.mediaId,
+                    currentPlayer.currentMediaItem?.localConfiguration?.uri?.toString()
+                )
+            }
+
+            var currentIndex = stations.indexOfFirst { it.id.toString() == currentStationId }
+            if (currentIndex == -1 && currentStreamUrl != null) {
+                currentIndex = stations.indexOfFirst { it.streamUrl.equals(currentStreamUrl, ignoreCase = true) }
+            }
+
+            val targetStation = if (forward) {
+                if (currentIndex == -1 || currentIndex == stations.size - 1) stations.first() else stations[currentIndex + 1]
+            } else {
+                if (currentIndex == -1 || currentIndex == 0) stations.last() else stations[currentIndex - 1]
+            }
+
+            withContext(Dispatchers.Main) {
+                playStationOnPlayer(targetStation)
+            }
+        }
+    }
+
+    private fun playStationOnPlayer(station: Station) {
+        val currentPlayer = player ?: return
+        val mediaMetadata = androidx.media3.common.MediaMetadata.Builder()
+            .setTitle(station.name)
+            .setArtworkUri(station.logoUrl?.let { Uri.parse(it) })
+            .build()
+
+        val mediaItem = androidx.media3.common.MediaItem.Builder()
+            .setUri(station.streamUrl)
+            .setMediaId(station.id.toString())
+            .setMediaMetadata(mediaMetadata)
+            .build()
+
+        currentPlayer.setMediaItem(mediaItem)
+        currentPlayer.prepare()
+        currentPlayer.play()
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -131,6 +306,15 @@ class RadioPlaybackService : MediaSessionService() {
     }
 
     override fun onDestroy() {
+        // Reset widget when playback service is destroyed
+        val intent = Intent("com.ari.streamer.widget.ACTION_UPDATE_STATE").apply {
+            setPackage(packageName)
+            putExtra("extra_station_name", "No Active Station")
+            putExtra("extra_is_playing", false)
+            putExtra("extra_logo_url", null as String?)
+        }
+        sendBroadcast(intent)
+
         mediaSession?.run {
             player.release()
             release()
