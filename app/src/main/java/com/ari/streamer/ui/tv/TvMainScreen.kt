@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ari.streamer.ui.MainViewModel
+import com.ari.streamer.ui.theme.parseColor
 
 @Composable
 fun TvMainScreen(
@@ -23,18 +24,19 @@ fun TvMainScreen(
     val playbackState by viewModel.playbackManager.playbackState.collectAsState()
     val stations by viewModel.stations.collectAsState()
     val categories by viewModel.categories.collectAsState()
+    val tvGradientColor1 by viewModel.tvGradientColor1.collectAsState()
+    val tvGradientColor2 by viewModel.tvGradientColor2.collectAsState()
 
     val currentStation = playbackState.currentStation
     val isPlaying = playbackState.isPlaying
     val format = playbackState.format
     val bitrate = playbackState.bitrate
 
-    // Dark green gradient similar to Spotify TV app
+    val color1 = parseColor(tvGradientColor1, Color(0xFF0F3E2E))
+    val color2 = parseColor(tvGradientColor2, Color(0xFF121212))
+
     val backgroundBrush = Brush.linearGradient(
-        colors = listOf(
-            Color(0xFF0F3E2E), // Dark Green top-left
-            Color(0xFF121212)  // Very dark gray/black bottom-right
-        )
+        colors = listOf(color1, color2)
     )
 
     Box(

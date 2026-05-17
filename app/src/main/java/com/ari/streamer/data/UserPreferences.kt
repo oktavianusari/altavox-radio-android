@@ -33,6 +33,8 @@ class UserPreferences(private val context: Context) {
         val DARK_SECONDARY = stringPreferencesKey("dark_secondary")
         val DARK_BACKGROUND = stringPreferencesKey("dark_background")
         val USE_LARGER_BUFFER = booleanPreferencesKey("use_larger_buffer")
+        val TV_GRADIENT_COLOR_1 = stringPreferencesKey("tv_gradient_color_1")
+        val TV_GRADIENT_COLOR_2 = stringPreferencesKey("tv_gradient_color_2")
     }
 
     val themeModeFlow: Flow<AppTheme> = context.dataStore.data.map { preferences ->
@@ -57,6 +59,14 @@ class UserPreferences(private val context: Context) {
 
     val useLargerBufferFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
         preferences[USE_LARGER_BUFFER] ?: false
+    }
+
+    val tvGradientColor1Flow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[TV_GRADIENT_COLOR_1] ?: "#0F3E2E"
+    }
+
+    val tvGradientColor2Flow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[TV_GRADIENT_COLOR_2] ?: "#121212"
     }
 
     suspend fun setThemeMode(mode: AppTheme) {
@@ -84,6 +94,18 @@ class UserPreferences(private val context: Context) {
     suspend fun setUseLargerBuffer(use: Boolean) {
         context.dataStore.edit { preferences ->
             preferences[USE_LARGER_BUFFER] = use
+        }
+    }
+
+    suspend fun setTvGradientColor1(colorHex: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TV_GRADIENT_COLOR_1] = colorHex
+        }
+    }
+
+    suspend fun setTvGradientColor2(colorHex: String) {
+        context.dataStore.edit { preferences ->
+            preferences[TV_GRADIENT_COLOR_2] = colorHex
         }
     }
 }

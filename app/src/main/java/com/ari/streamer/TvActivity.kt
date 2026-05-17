@@ -18,9 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import com.ari.streamer.data.AppTheme
 import com.ari.streamer.service.RadioPlaybackService
 import com.ari.streamer.ui.MainViewModel
-import com.ari.streamer.ui.SettingsScreen
 import com.ari.streamer.ui.theme.StreamerTheme
 import com.ari.streamer.ui.tv.TvMainScreen
+import com.ari.streamer.ui.tv.TvSettingsScreen
 
 class TvActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
@@ -78,11 +78,9 @@ class TvActivity : ComponentActivity() {
                             )
                         }
                         composable("settings") {
-                            SettingsScreen(
+                            TvSettingsScreen(
                                 viewModel = viewModel,
-                                onNavigateBack = { navController.popBackStack() },
-                                onBackupClick = { /* TV might not support file picker easily, skip for now or implement if needed */ },
-                                onRestoreClick = { /* Same as backup */ }
+                                onNavigateBack = { navController.popBackStack() }
                             )
                         }
                     }

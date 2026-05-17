@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch {
                 try {
                     contentResolver.openOutputStream(it)?.use { outputStream ->
-                        exportToM3u(outputStream)
+                        viewModel.exportToM3u(outputStream)
                     }
                     Toast.makeText(this@MainActivity, "Backup saved", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
@@ -52,7 +52,7 @@ class MainActivity : ComponentActivity() {
             lifecycleScope.launch {
                 try {
                     contentResolver.openInputStream(it)?.use { inputStream ->
-                        importFromM3u(inputStream)
+                        viewModel.importFromM3u(inputStream)
                     }
                     Toast.makeText(this@MainActivity, "Restore successful", Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
@@ -114,41 +114,13 @@ class MainActivity : ComponentActivity() {
                                     createDocumentLauncher.launch("backup_radio.m3u")
                                 },
                                 onRestoreClick = {
-                                    openDocumentLauncher.launch(arrayOf("audio/x-mpegurl", "audio/mpegurl", "application/x-mpegurl"))
+                                    openDocumentLauncher.launch(arrayOf("*/*"))
                                 }
                             )
                         }
                     }
                 }
             }
-        }
-    }
-
-    private suspend fun exportToM3u(outputStream: OutputStream) = withContext(Dispatchers.IO) {
-        val stations = viewModel.stations.value
-        val categories = viewModel.categories.value.associateBy { it.id }
-
-        outputStream.bufferedWriter().use { writer ->
-            writer.write("#EXTM3U\n")
-            stations.forEach { station ->
-                val categoryName = categories[station.categoryId]?.name ?: "Uncategorized"
-                writer.write("#EXTINF:-1 tvg-logo=\"${station.logoUrl ?: ""}\" group-title=\"$categoryName\",${station.name}\n")
-                writer.write("${station.streamUrl}\n")
-            }
-        }
-    }
-
-    private suspend fun importFromM3u(inputStream: InputStream) = withContext(Dispatchers.IO) {
-        val entries = com.ari.streamer.util.M3uParser.parse(inputStream)
-        // Similar to updateFromRemoteM3u
-        val categoriesMap = mutableMapOf<String, Long>()
-        entries.forEach { entry ->
-            val catName = entry.categoryName ?: "Uncategorized"
-            if (!categoriesMap.containsKey(catName)) {
-                viewModel.addCategory(catName) // This is simplified. In a real app we'd wait for ID or DAO insert
-            }
-            // For complete restore, we'd need DAO access directly here or via a dedicated ViewModel method
-            viewModel.addStation(entry.title, entry.url, entry.logoUrl, null) // Null catId for now due to async
         }
     }
 }

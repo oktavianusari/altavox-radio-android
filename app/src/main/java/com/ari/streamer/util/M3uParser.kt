@@ -1,6 +1,5 @@
 package com.ari.streamer.util
 
-import com.ari.streamer.data.Station
 import java.io.InputStream
 import java.util.Scanner
 
@@ -26,33 +25,52 @@ object M3uParser {
 
             if (line.startsWith("#EXTINF:")) {
                 // Parse #EXTINF:duration tvg-logo="url" group-title="category",Title
-                
-                val logoRegex = Regex("tvg-logo=\"([^\"]+)\"")
+                // Robust regexes supporting spaces around equal signs and single or double quotes
+                val logoRegex = Regex("""tvg-logo\s*=\s*["']([^"']*)["']""")
                 val logoMatch = logoRegex.find(line)
                 currentLogoUrl = logoMatch?.groupValues?.get(1)?.trim()
 
-                val groupRegex = Regex("group-title=\"([^\"]+)\"")
+                val groupRegex = Regex("""group-title\s*=\s*["']([^"']*)["']""")
                 val groupMatch = groupRegex.find(line)
-                currentCategory = groupMatch?.groupValues?.get(1)
+                currentCategory = groupMatch?.groupValues?.get(1)?.trim()
 
-                // Extract title (everything after the last comma)
-                val commaIndex = line.lastIndexOf(',')
+                // Robust title extraction:
+                // Find separating comma by scanning character by character.
+                // This ensures commas inside attribute strings (like URLs) are ignored,
+                // while commas separating attributes from titles are correctly identified.
+                var commaIndex = -1
+                var inDoubleQuotes = false
+                var inSingleQuotes = false
+                for (i in line.indices) {
+                    val char = line[i]
+                    if (char == '"' && !inSingleQuotes) {
+                        inDoubleQuotes = !inDoubleQuotes
+                    } else if (char == '\'' && !inDoubleQuotes) {
+                        inSingleQuotes = !inSingleQuotes
+                    } else if (char == ',' && !inDoubleQuotes && !inSingleQuotes) {
+                        commaIndex = i
+                        break
+                    }
+                }
+                
                 if (commaIndex != -1 && commaIndex < line.length - 1) {
                     currentTitle = line.substring(commaIndex + 1).trim()
                 } else {
                     currentTitle = "Unknown Station"
                 }
             } else if (!line.startsWith("#")) {
-                // This is likely the URL
+                // This is the stream URL
                 val url = line
-                entries.add(
-                    ParsedM3uEntry(
-                        title = currentTitle,
-                        url = url,
-                        logoUrl = currentLogoUrl,
-                        categoryName = currentCategory
+                if (currentTitle.isNotEmpty() || url.isNotEmpty()) {
+                    entries.add(
+                        ParsedM3uEntry(
+                            title = if (currentTitle.isEmpty()) "Unknown Station" else currentTitle,
+                            url = url,
+                            logoUrl = currentLogoUrl,
+                            categoryName = currentCategory
+                        )
                     )
-                )
+                }
                 // Reset for next entry
                 currentTitle = ""
                 currentLogoUrl = null
