@@ -1,14 +1,15 @@
 # AltaVox Radio
 
-[🇮🇩 Ke deskripsi Bahasa Indonesia](#-bahasa-indonesia)
+[🇮🇩 Jump to Bahasa Indonesia](#-bahasa-indonesia)
 
 ---
 
 ## 🇬🇧 English
 
-Modern internet radio app for Android & Android TV with stable streaming, dynamic playlists, and a customizable OneUI-style interface.
+Modern internet radio app for Android & Android TV inspired by Transistor, featuring stable streaming, dynamic playlists, and a customizable OneUI-style interface.
 
-> Supports user-hosted `.m3u` playlists.
+> Minimum Android 7.0 (Nougat)  
+> Supports user-hosted `.m3u` playlists
 
 ### 🚀 Features
 
@@ -33,9 +34,10 @@ Modern internet radio app for Android & Android TV with stable streaming, dynami
 
 ## 🇮🇩 Bahasa Indonesia
 
-Aplikasi radio internet modern untuk Android & Android TV dengan streaming stabil, playlist dinamis, dan tampilan ala OneUI yang fleksibel.
+Aplikasi radio internet modern untuk Android & Android TV yang terinspirasi dari Transistor dengan streaming stabil, playlist dinamis, dan tampilan ala OneUI yang fleksibel.
 
-> Mendukung playlist `.m3u` dari server pengguna.
+> Minimum Android 7.0 (Nougat)  
+> Mendukung playlist `.m3u` dari server pengguna
 
 ### 🚀 Fitur
 
