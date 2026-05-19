@@ -1,14 +1,12 @@
 package com.ari.streamer.ui.tv
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,76 +42,71 @@ fun TvNowPlaying(
     bitrate: String?,
     onPlayPauseClick: () -> Unit
 ) {
+    // Glassmorphism pill container
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp)
-            .background(Color(0xFF181818).copy(alpha = 0.9f), RoundedCornerShape(12.dp)),
-        contentAlignment = Alignment.BottomStart
+            .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(24.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Station Info
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.weight(1f)
+            // Station Logo
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(station.logoUrl ?: "https://ui-avatars.com/api/?name=${station.name}&background=random")
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Now Playing Logo",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(Color.White)
+            )
+
+            // Info text Column
+            Column(
+                modifier = Modifier.width(140.dp) // Bound width so it fits beautifully
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(station.logoUrl ?: "https://ui-avatars.com/api/?name=${station.name}&background=random")
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = "Now Playing Logo",
-                    contentScale = ContentScale.Fit, // Fix: Don't crop
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.White) // Background for logos with transparency
+                Text(
+                    text = station.name,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 
-                Spacer(modifier = Modifier.width(16.dp))
-                
-                Column {
-                    Text(
-                        text = station.name,
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    
-                    val metadata = listOfNotNull(format, bitrate).joinToString(" | ")
-                    Text(
-                        text = metadata.ifEmpty { "Streaming..." },
-                        color = Color.LightGray,
-                        fontSize = 14.sp
-                    )
-                }
+                val metadata = listOfNotNull(format, bitrate).joinToString(" | ")
+                Text(
+                    text = metadata.ifEmpty { "Streaming..." },
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
 
-            // Controls
+            // Play/Stop Action Button
             Card(
                 onClick = onPlayPauseClick,
                 shape = CardDefaults.shape(shape = CircleShape),
                 scale = CardDefaults.scale(focusedScale = 1.1f),
                 colors = CardDefaults.colors(
-                    containerColor = Color.White,
-                    focusedContainerColor = Color(0xFF1DB954) // Spotify green highlight on focus
+                    containerColor = Color.White.copy(alpha = 0.2f),
+                    focusedContainerColor = Color(0xFF1DB954) // Spotify green on focus
                 ),
-                modifier = Modifier.size(56.dp)
+                modifier = Modifier.size(32.dp)
             ) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
                         contentDescription = "Play/Pause",
-                        tint = Color.Black,
-                        modifier = Modifier.size(32.dp)
+                        tint = if (isPlaying) Color.Black else Color.White,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }

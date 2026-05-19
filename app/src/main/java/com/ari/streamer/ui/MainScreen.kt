@@ -11,6 +11,11 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,12 +37,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.ui.res.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearch: () -> Unit
 ) {
     val categories by viewModel.categories.collectAsState()
     val stations by viewModel.stations.collectAsState()
@@ -47,15 +54,26 @@ fun MainScreen(
     
     var stationToEdit by remember { mutableStateOf<Station?>(null) }
     var m3uUrl by remember { mutableStateOf("https://pastebin.com/raw/i4YM5tAL") }
+    var searchQuery by remember { mutableStateOf("") }
+    var showWarningDialog by remember { mutableStateOf(false) }
+
+    val filteredStations = remember(searchQuery, stations, categories) {
+        val filtered = if (searchQuery.isBlank()) stations
+        else stations.filter { station ->
+            station.name.contains(searchQuery, ignoreCase = true) ||
+            categories.find { it.id == station.categoryId }?.name?.contains(searchQuery, ignoreCase = true) == true
+        }
+        filtered.sortedBy { it.name.lowercase() }
+    }
 
     LaunchedEffect(updateStatus) {
         when (updateStatus) {
             MainViewModel.UpdateStatus.Success -> {
-                Toast.makeText(context, "Update finished successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.playlist_updated), Toast.LENGTH_SHORT).show()
                 viewModel.resetUpdateStatus()
             }
             MainViewModel.UpdateStatus.Error -> {
-                Toast.makeText(context, "Failed to update from remote server.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, context.getString(R.string.failed_update_remote), Toast.LENGTH_SHORT).show()
                 viewModel.resetUpdateStatus()
             }
             else -> {}
@@ -65,10 +83,13 @@ fun MainScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("AltaVox Radio") },
+                title = { Text(stringResource(R.string.app_name)) },
                 actions = {
+                    IconButton(onClick = onNavigateToSearch) {
+                        Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_radio))
+                    }
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Settings")
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
                     }
                 }
             )
@@ -99,20 +120,20 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    Icons.Default.Settings,
+                    Icons.Default.Radio,
                     contentDescription = null,
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "Welcome to AltaVox Radio!",
+                    stringResource(R.string.welcome_title),
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "You don't have any radio stations yet. Enter an M3U URL below to get started.",
+                    stringResource(R.string.welcome_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -121,12 +142,18 @@ fun MainScreen(
                 OutlinedTextField(
                     value = m3uUrl,
                     onValueChange = { m3uUrl = it },
-                    label = { Text("M3U Playlist URL") },
+                    label = { Text(stringResource(R.string.playlist_url)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(
-                    onClick = { viewModel.updateFromRemoteM3u(m3uUrl) },
+                    onClick = {
+                        if (m3uUrl.isNotBlank()) {
+                            showWarningDialog = true
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.url_cannot_be_blank), Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     enabled = updateStatus != MainViewModel.UpdateStatus.Loading,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -135,35 +162,157 @@ fun MainScreen(
                             modifier = Modifier.size(24.dp).padding(end = 8.dp),
                             strokeWidth = 2.dp
                         )
-                        Text("Downloading...")
+                        Text(stringResource(R.string.downloading))
                     } else {
-                        Text("Download Playlist")
+                        Text(stringResource(R.string.download_playlist))
                     }
                 }
             }
         } else {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
             ) {
-                categories.forEach { category ->
-                    val categoryStations = stations.filter { it.categoryId == category.id || (it.categoryId == null && category.name == "Uncategorized") }
-                    if (categoryStations.isNotEmpty()) {
-                        item {
+                // Spotify-inspired modern fully rounded search bar
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                    leadingIcon = { 
+                        Icon(
+                            imageVector = Icons.Default.Search, 
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        ) 
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear, 
+                                    contentDescription = "Clear search",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    },
+                    shape = RoundedCornerShape(28.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                )
+
+                if (searchQuery.isBlank()) {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        categories.forEach { category ->
+                            val categoryStations = stations
+                                .filter { it.categoryId == category.id || (it.categoryId == null && category.name.equals("Uncategorized", ignoreCase = true)) }
+                                .sortedBy { it.name.lowercase() }
+                            if (categoryStations.isNotEmpty()) {
+                                item {
+                                    val catDisplayName = if (category.name.equals("Uncategorized", ignoreCase = true)) {
+                                        stringResource(R.string.uncategorized)
+                                    } else if (category.name.equals("Favourites", ignoreCase = true)) {
+                                        stringResource(R.string.favourites)
+                                    } else {
+                                        category.name
+                                    }
+                                    
+                                    Text(
+                                        text = catDisplayName,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                    )
+                                }
+                                items(categoryStations) { station ->
+                                    StationItem(
+                                        station = station,
+                                        onClick = { viewModel.playStation(station) },
+                                        onLongClick = { stationToEdit = station }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Fallback for stasiuns whose categoryId == null or doesn't match any category in categories list
+                        val uncategorizedStations = stations
+                            .filter { station ->
+                                val hasNoCat = station.categoryId == null
+                                val isCatMissing = station.categoryId != null && categories.none { it.id == station.categoryId }
+                                val hasNoDbUncategorized = categories.none { it.name.equals("Uncategorized", ignoreCase = true) }
+                                
+                                (hasNoCat && hasNoDbUncategorized) || (isCatMissing && hasNoDbUncategorized)
+                            }
+                            .sortedBy { it.name.lowercase() }
+                            
+                        if (uncategorizedStations.isNotEmpty()) {
+                            item {
+                                Text(
+                                    text = stringResource(R.string.uncategorized),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            }
+                            items(uncategorizedStations) { station ->
+                                StationItem(
+                                    station = station,
+                                    onClick = { viewModel.playStation(station) },
+                                    onLongClick = { stationToEdit = station }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    if (filteredStations.isEmpty()) {
+                        // Spotify-like Premium Empty State
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(32.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MusicNote,
+                                contentDescription = null,
+                                modifier = Modifier.size(64.dp),
+                                tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = category.name,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                text = stringResource(R.string.no_stations_found),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
                             )
                         }
-                        items(categoryStations) { station ->
-                            StationItem(
-                                station = station,
-                                onClick = { viewModel.playStation(station) },
-                                onLongClick = { stationToEdit = station }
-                            )
+                    } else {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            item {
+                                Text(
+                                    text = stringResource(R.string.search_results),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                                )
+                            }
+                            items(filteredStations) { station ->
+                                StationItem(
+                                    station = station,
+                                    onClick = { viewModel.playStation(station) },
+                                    onLongClick = { stationToEdit = station }
+                                )
+                            }
                         }
                     }
                 }
@@ -183,6 +332,29 @@ fun MainScreen(
             onDelete = {
                 viewModel.deleteStation(stationToEdit!!)
                 stationToEdit = null
+            }
+        )
+    }
+
+    if (showWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { showWarningDialog = false },
+            title = { Text(stringResource(R.string.warning)) },
+            text = { Text(stringResource(R.string.remote_m3u_warning_text)) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showWarningDialog = false
+                        viewModel.updateFromRemoteM3u(m3uUrl)
+                    }
+                ) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showWarningDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
             }
         )
     }
@@ -307,29 +479,29 @@ fun EditStationDialog(
     var categoryId by remember { mutableStateOf(station.categoryId) }
     var expanded by remember { mutableStateOf(false) }
 
-    val currentCategoryName = categories.find { it.id == categoryId }?.name ?: "Uncategorized"
+    val currentCategoryName = categories.find { it.id == categoryId }?.name ?: stringResource(R.string.uncategorized)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Edit Station") },
+        title = { Text(stringResource(R.string.edit_radio_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text(stringResource(R.string.name_label)) },
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = streamUrl,
                     onValueChange = { streamUrl = it },
-                    label = { Text("Stream URL") },
+                    label = { Text(stringResource(R.string.stream_url_label)) },
                     singleLine = true
                 )
                 OutlinedTextField(
                     value = logoUrl,
                     onValueChange = { logoUrl = it },
-                    label = { Text("Logo URL") },
+                    label = { Text(stringResource(R.string.logo_url_label)) },
                     singleLine = true
                 )
 
@@ -341,7 +513,7 @@ fun EditStationDialog(
                         value = currentCategoryName,
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text("Category") },
+                        label = { Text(stringResource(R.string.category_label)) },
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
                         modifier = Modifier.menuAnchor()
@@ -351,7 +523,7 @@ fun EditStationDialog(
                         onDismissRequest = { expanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Uncategorized") },
+                            text = { Text(stringResource(R.string.uncategorized)) },
                             onClick = {
                                 categoryId = null
                                 expanded = false
@@ -381,17 +553,17 @@ fun EditStationDialog(
                     ))
                 }
             ) {
-                Text("Save")
+                Text(stringResource(R.string.save))
             }
         },
         dismissButton = {
             Row {
                 TextButton(onClick = onDelete, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-                    Text("Delete")
+                    Text(stringResource(R.string.delete))
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         }

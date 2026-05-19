@@ -10,11 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
@@ -46,7 +46,12 @@ import com.ari.streamer.data.Station
 fun TvRadioCatalog(
     stations: List<Station>,
     categories: List<Category>,
+    currentStation: Station?,
+    isPlaying: Boolean,
+    format: String?,
+    bitrate: String?,
     onStationClick: (Station) -> Unit,
+    onPlayPauseClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     // Time state
@@ -68,13 +73,13 @@ fun TvRadioCatalog(
 
     TvLazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 100.dp) // Space for mini player
+        contentPadding = PaddingValues(bottom = 32.dp) // Regular bottom padding (no massive bar at the bottom)
     ) {
         item {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 32.dp),
+                    .padding(bottom = 24.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -85,21 +90,35 @@ fun TvRadioCatalog(
                     fontWeight = FontWeight.Bold
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Small Now Playing Box next to the clock
+                    if (currentStation != null) {
+                        TvNowPlaying(
+                            station = currentStation,
+                            isPlaying = isPlaying,
+                            format = format,
+                            bitrate = bitrate,
+                            onPlayPauseClick = onPlayPauseClick
+                        )
+                    }
+
                     Text(
                         text = currentTime,
                         color = Color.White.copy(alpha = 0.8f),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(end = 24.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp)
                     )
 
                     Card(
                         onClick = onSettingsClick,
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(44.dp),
                         scale = CardDefaults.scale(focusedScale = 1.1f),
                         colors = CardDefaults.colors(
-                            containerColor = Color.Transparent,
+                            containerColor = Color.White.copy(alpha = 0.08f),
                             focusedContainerColor = Color.White.copy(alpha = 0.2f)
                         )
                     ) {
@@ -108,7 +127,7 @@ fun TvRadioCatalog(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
                                 tint = Color.White,
-                                modifier = Modifier.size(28.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
@@ -138,13 +157,19 @@ fun TvRadioCatalog(
                         val chunkedStations = categoryStations.chunked(2)
                         items(chunkedStations) { pair ->
                             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                val isFirstCurrent = currentStation?.id == pair[0].id
                                 TvStationCard(
                                     station = pair[0],
+                                    isCurrent = isFirstCurrent,
+                                    isPlaying = isPlaying,
                                     onClick = { onStationClick(pair[0]) }
                                 )
                                 if (pair.size > 1) {
+                                    val isSecondCurrent = currentStation?.id == pair[1].id
                                     TvStationCard(
                                         station = pair[1],
+                                        isCurrent = isSecondCurrent,
+                                        isPlaying = isPlaying,
                                         onClick = { onStationClick(pair[1]) }
                                     )
                                 }
@@ -177,13 +202,19 @@ fun TvRadioCatalog(
                     val chunkedStations = uncategorizedStations.chunked(2)
                     items(chunkedStations) { pair ->
                         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                            val isFirstCurrent = currentStation?.id == pair[0].id
                             TvStationCard(
                                 station = pair[0],
+                                isCurrent = isFirstCurrent,
+                                isPlaying = isPlaying,
                                 onClick = { onStationClick(pair[0]) }
                             )
                             if (pair.size > 1) {
+                                val isSecondCurrent = currentStation?.id == pair[1].id
                                 TvStationCard(
                                     station = pair[1],
+                                    isCurrent = isSecondCurrent,
+                                    isPlaying = isPlaying,
                                     onClick = { onStationClick(pair[1]) }
                                 )
                             }
@@ -198,19 +229,37 @@ fun TvRadioCatalog(
 @Composable
 fun TvStationCard(
     station: Station,
+    isCurrent: Boolean,
+    isPlaying: Boolean,
     onClick: () -> Unit
 ) {
+    // Spotify-like green border for currently active playing station card, sleek gray for paused
+    val borderStroke = if (isCurrent) {
+        Border(
+            border = BorderStroke(3.dp, if (isPlaying) Color(0xFF1DB954) else Color.Gray),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        )
+    } else {
+        Border(
+            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f)),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+        )
+    }
+
+    val focusedBorderStroke = Border(
+        border = BorderStroke(3.dp, if (isCurrent && isPlaying) Color(0xFF1DB954) else Color.White),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+    )
+
     Card(
         onClick = onClick,
         modifier = Modifier
-            .width(120.dp) // 50% smaller from 180dp is ~120dp for better TV grid
-            .height(160.dp), // 50% smaller from 240dp is 160dp
+            .width(120.dp)
+            .height(160.dp),
         scale = CardDefaults.scale(focusedScale = 1.05f),
         border = CardDefaults.border(
-            focusedBorder = Border(
-                border = BorderStroke(3.dp, Color.White),
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
-            )
+            border = borderStroke,
+            focusedBorder = focusedBorderStroke
         )
     ) {
         Column(
@@ -225,8 +274,8 @@ fun TvStationCard(
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f) // Use weight to keep space for text
-                    .padding(8.dp) // Add padding so logo doesn't touch edges
+                    .weight(1f)
+                    .padding(8.dp)
                     .background(Color.White, androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
             )
             
@@ -237,7 +286,7 @@ fun TvStationCard(
                     text = station.name,
                     color = Color.Black,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.sp, // Smaller font for smaller card
+                    fontSize = 12.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )

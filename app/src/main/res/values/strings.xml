@@ -1,3 +1,118 @@
 <resources>
     <string name="app_name">AltaVox Radio</string>
+    <string name="settings">Settings</string>
+    <string name="back">Back</string>
+    <string name="remote_m3u_update">Remote M3U Update</string>
+    <string name="m3u_url">M3U URL</string>
+    <string name="update_m3u_button">Update Radio List from Remote Server</string>
+    <string name="updating">Updating...</string>
+    <string name="theme_mode">Theme Mode</string>
+    <string name="light_theme_colors">Light Theme Colors (Hex)</string>
+    <string name="dark_theme_colors">Dark Theme Colors (Hex)</string>
+    <string name="backup_restore">Backup &amp; Restore</string>
+    <string name="backup_to_m3u">Backup to .m3u</string>
+    <string name="restore_from_m3u">Restore from .m3u</string>
+    <string name="advanced_playback">Advanced Playback</string>
+    <string name="use_larger_buffer">Use Larger Buffer (Slow Network)</string>
+    <string name="manage_categories">Manage Categories</string>
+    <string name="add_new_category">Add New Category</string>
+    <string name="no_categories">No categories found.</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="language">Language</string>
+    <string name="widget_settings">Widget Settings</string>
+    <string name="widget_1_bg">Big Widget Background Color</string>
+    <string name="widget_1_opacity_label">Big Widget Opacity</string>
+    <string name="widget_2_bg">Small Widget Background Color</string>
+    <string name="widget_2_opacity_label">Small Widget Opacity</string>
+    <string name="help">Help</string>
+    <string name="help_subtitle">Explain app features and widget configurations</string>
+    <string name="welcome_title">Welcome to AltaVox Radio!</string>
+    <string name="welcome_desc">You don\'t have any radio stations yet. Press + to start adding radio station or enter a M3U URL below to get started.</string>
+    <string name="playlist_url">M3U Playlist URL</string>
+    <string name="download_playlist">Download Playlist</string>
+    <string name="downloading">Downloading...</string>
+    <string name="warning">Warning</string>
+    <string name="confirm">Confirm</string>
+    <string name="remote_m3u_warning_text">Updating the radio list from an online M3U will delete all currently saved radio stations. Are you sure you want to proceed?</string>
+    <string name="search_placeholder">Search radio stations...</string>
+    <string name="search_results">Search Results</string>
+    <string name="no_stations_found">No stations match your query</string>
+    <string name="favourites">FAVOURITES</string>
+    <string name="uncategorized">Uncategorized</string>
+    
+    <!-- Help Content Strings -->
+    <string name="help_intro_title">AltaVox Radio - Help &amp; Features</string>
+    <string name="help_intro_body">Welcome to AltaVox Radio! Below is a detailed explanation of the features available in this application.</string>
+    
+    <string name="help_streaming_title">1. Radio Streaming &amp; Custom Playlists</string>
+    <string name="help_streaming_body">The app streams standard live feeds seamlessly. You can customize the source list using remote M3U URL playlists. These are synced, saved, and categorized directly within the app.</string>
+    
+    <string name="help_widgets_title">2. Home Screen Widgets</string>
+    <string name="help_widgets_body">AltaVox Radio offers two widget choices:\n• Big Widget: Shows the currently playing radio logo, details, previous/next controls, and dynamic quick-play buttons for your top 2 favorite stations.\n• Small Widget: A sleek, horizontal bar with essential controls `[Prev] [Play/Pause] [Next]`, designed to fit anywhere.</string>
+    
+    <string name="help_widget_styles_title">3. Dynamic Widget Customization</string>
+    <string name="help_widget_styles_body">Modify background tint colors and transparency (opacity) levels for each widget type directly under Widget Settings. Changes apply instantly, letting you personalize your Android launcher aesthetic.</string>
+    
+    <string name="help_search_title">4. Spotify-Style Search</string>
+    <string name="help_search_body">Tap the Search bar at the top of the main screen. Typing filters the station list dynamically across both radio station names and categories, offering a fast, responsive, and seamless search experience.</string>
+    
+    <string name="help_localization_title">5. Multi-Language Support</string>
+    <string name="help_localization_body">Switch the entire application interface between English and Bahasa Indonesia. The change applies dynamically and immediately across the entire workspace.</string>
+    
+    <string name="help_advanced_title">6. Buffering &amp; Custom Theme Styling</string>
+    <string name="help_advanced_body">Customize accent colors for light and dark themes using color pickers. For slow network connections, toggle Use Larger Buffer under Advanced Playback to reduce audio skipping and dropouts.</string>
+    
+    <string name="widget_settings_warning">Note: Changing widget color or opacity might pause streaming. You can resume playback after you are done adjusting.</string>
+    <string name="custom_hex_code">Custom Hex Code</string>
+    <string name="predefined_colors">Predefined Colors</string>
+    <string name="invalid_hex_format">Invalid hex color format</string>
+    <string name="apply">Apply</string>
+    <string name="save_widget_settings">Save Widget Settings</string>
+    <string name="widget_settings_saved">Widget settings saved successfully!</string>
+    
+    <string name="search_online">Search Online</string>
+    <string name="radio_name_field">Radio Name</string>
+    <string name="country_field">Country</string>
+    <string name="search_btn">Search</string>
+    <string name="searching">Searching...</string>
+    <string name="no_results">No stations found online. Try adjusting your filters.</string>
+    <string name="add_to_list">Add to List</string>
+    <string name="select_category">Select Category</string>
+    <string name="station_added">Added successfully!</string>
+    <string name="add_radio">Add Radio</string>
+    <string name="playlist_updated">Playlist Updated Successfully</string>
+    <string name="city_field">City</string>
+    <string name="search_tip">Tip: Search with radio name, country, and city as accurately as possible. Avoid typos. If unsuccessful, simply search by radio name.</string>
+    <string name="please_enter_criteria">Please enter name, country, or city</string>
+    <string name="search_guidance">Enter search criteria to find radio stations online.</string>
+    <string name="save_station_to_category">Save \"%1$s\" to your local radio list under the chosen category.</string>
+    <string name="category_label">Category</string>
+    <string name="provider_credit">Online radio search is provided by www.radio-browser.info</string>
+    <string name="add_category_title">Add Category</string>
+    <string name="edit_category_title">Edit Category</string>
+    <string name="category_name_label">Category Name</string>
+    <string name="add_btn">Add</string>
+    <string name="close_btn">Close</string>
+    <string name="select_color_title">Select %1$s</string>
+    <string name="color_primary">Primary</string>
+    <string name="color_secondary">Secondary</string>
+    <string name="color_background">Background</string>
+    <string name="hex_code_label">Hex Code</string>
+    <string name="failed_update_remote">Failed to update from remote server.</string>
+    <string name="url_cannot_be_blank">URL cannot be blank</string>
+    <string name="back_desc">Back</string>
+    <string name="stop_preview">Stop Preview</string>
+    <string name="play_preview">Play Preview</string>
+    <string name="add_to_local_list">Add to local list</string>
+    <string name="edit_radio_title">Edit Radio</string>
+    <string name="name_label">Name</string>
+    <string name="stream_url_label">Stream URL</string>
+    <string name="logo_url_label">Logo URL</string>
+    <string name="backup_saved">Backup saved successfully</string>
+    <string name="backup_failed">Backup failed: %1$s</string>
+    <string name="restore_successful">Restore successful</string>
+    <string name="restore_failed">Restore failed: %1$s</string>
 </resources>

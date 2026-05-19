@@ -264,14 +264,33 @@ fun TvSettingsScreen(
 
             // Section 4: M3U Sync
             item {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
                         text = "DATABASE & PLAYLIST",
                         color = Color.White.copy(alpha = 0.6f),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 1.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    
+                    // Focusable TextField optimized for TV remote D-Pad input
+                    androidx.compose.material3.OutlinedTextField(
+                        value = m3uUrl,
+                        onValueChange = { m3uUrl = it },
+                        label = { androidx.compose.material3.Text("M3U Playlist URL", color = Color.White.copy(alpha = 0.8f)) },
+                        singleLine = true,
+                        colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White.copy(alpha = 0.8f),
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White.copy(alpha = 0.6f),
+                            focusedContainerColor = Color.White.copy(alpha = 0.15f),
+                            unfocusedContainerColor = Color.White.copy(alpha = 0.05f)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
                     )
                     
                     Card(

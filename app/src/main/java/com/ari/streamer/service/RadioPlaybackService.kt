@@ -29,6 +29,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import okhttp3.Cookie
 import okhttp3.CookieJar
 import okhttp3.HttpUrl
@@ -82,10 +83,12 @@ class RadioPlaybackService : MediaSessionService() {
         super.onCreate()
         val userPreferences = UserPreferences(this)
         
-        serviceScope.launch {
-            val useLargerBuffer = userPreferences.useLargerBufferFlow.first()
-            initializePlayer(useLargerBuffer)
+        // Read preference synchronously to guarantee player and session are immediately ready.
+        // This prevents the MediaController binding from throwing a SecurityException due to a null session.
+        val useLargerBuffer = runBlocking {
+            userPreferences.useLargerBufferFlow.first()
         }
+        initializePlayer(useLargerBuffer)
     }
 
     @UnstableApi
@@ -134,6 +137,17 @@ class RadioPlaybackService : MediaSessionService() {
                         androidx.media3.common.Player.EVENT_PLAYBACK_STATE_CHANGED
                     )) {
                     broadcastWidgetState()
+                    
+                    val currentId = player.currentMediaItem?.mediaId
+                    if (currentId != null) {
+                        val stationId = currentId.toLongOrNull()
+                        if (stationId != null) {
+                            serviceScope.launch {
+                                val userPrefs = UserPreferences(this@RadioPlaybackService)
+                                userPrefs.setLastPlayedStationId(stationId)
+                            }
+                        }
+                    }
                 }
             }
         })

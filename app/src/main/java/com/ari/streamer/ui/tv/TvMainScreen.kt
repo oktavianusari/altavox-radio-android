@@ -55,26 +55,23 @@ fun TvMainScreen(
                 TvRadioCatalog(
                     stations = stations,
                     categories = categories,
-                    onStationClick = { station ->
-                        viewModel.playStation(station)
-                    },
-                    onSettingsClick = onNavigateToSettings
-                )
-            }
-        }
-
-        // Mini Player at the bottom if a station is currently playing
-        if (currentStation != null) {
-            Box(modifier = Modifier.align(androidx.compose.ui.Alignment.BottomCenter)) {
-                TvNowPlaying(
-                    station = currentStation,
+                    currentStation = currentStation,
                     isPlaying = isPlaying,
                     format = format,
                     bitrate = bitrate,
-                    onPlayPauseClick = { 
-                        if (isPlaying) viewModel.playbackManager.pause() 
-                        else viewModel.playbackManager.play() 
-                    }
+                    onStationClick = { station ->
+                        if (currentStation?.id == station.id) {
+                            if (isPlaying) viewModel.playbackManager.pause()
+                            else viewModel.playbackManager.play()
+                        } else {
+                            viewModel.playStation(station)
+                        }
+                    },
+                    onPlayPauseClick = {
+                        if (isPlaying) viewModel.playbackManager.pause()
+                        else viewModel.playbackManager.play()
+                    },
+                    onSettingsClick = onNavigateToSettings
                 )
             }
         }

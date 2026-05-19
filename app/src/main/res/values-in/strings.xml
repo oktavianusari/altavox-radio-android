@@ -1,0 +1,118 @@
+<resources>
+    <string name="app_name">AltaVox Radio</string>
+    <string name="settings">Pengaturan</string>
+    <string name="back">Kembali</string>
+    <string name="remote_m3u_update">Pembaruan M3U Jarak Jauh</string>
+    <string name="m3u_url">URL M3U</string>
+    <string name="update_m3u_button">Perbarui Daftar Radio dari Server Jarak Jauh</string>
+    <string name="updating">Memperbarui...</string>
+    <string name="theme_mode">Mode Tema</string>
+    <string name="light_theme_colors">Warna Tema Terang (Hex)</string>
+    <string name="dark_theme_colors">Warna Tema Gelap (Hex)</string>
+    <string name="backup_restore">Cadangkan &amp; Pulihkan</string>
+    <string name="backup_to_m3u">Cadangkan ke .m3u</string>
+    <string name="restore_from_m3u">Pulihkan dari .m3u</string>
+    <string name="advanced_playback">Putar Tingkat Lanjut</string>
+    <string name="use_larger_buffer">Buffer Besar pada Jaringan Lambat</string>
+    <string name="manage_categories">Kelola Kategori</string>
+    <string name="add_new_category">Tambah Kategori Baru</string>
+    <string name="no_categories">Kategori tidak ditemukan.</string>
+    <string name="edit">Ubah</string>
+    <string name="delete">Hapus</string>
+    <string name="save">Simpan</string>
+    <string name="cancel">Batal</string>
+    <string name="language">Bahasa</string>
+    <string name="widget_settings">Pengaturan Widget</string>
+    <string name="widget_1_bg">Warna Latar Big Widget</string>
+    <string name="widget_1_opacity_label">Opacity Big Widget</string>
+    <string name="widget_2_bg">Warna Latar Small Widget</string>
+    <string name="widget_2_opacity_label">Opacity Small Widget</string>
+    <string name="help">Bantuan</string>
+    <string name="help_subtitle">Penjelasan fitur aplikasi dan konfigurasi widget</string>
+    <string name="welcome_title">Selamat Datang di AltaVox Radio!</string>
+    <string name="welcome_desc">Anda belum memiliki stasiun radio. Tekan + untuk mulai menambahkan stasiun radio atau masukkan URL M3U di bawah ini untuk memulai.</string>
+    <string name="playlist_url">URL Playlist M3U</string>
+    <string name="download_playlist">Unduh Playlist</string>
+    <string name="downloading">Mengunduh...</string>
+    <string name="warning">Peringatan</string>
+    <string name="confirm">Konfirmasi</string>
+    <string name="remote_m3u_warning_text">Mengunduh daftar radio dari M3U online akan menghapus semua daftar radio saat ini. Apakah Anda yakin ingin melanjutkan?</string>
+    <string name="search_placeholder">Cari stasiun radio...</string>
+    <string name="search_results">Hasil Pencarian</string>
+    <string name="no_stations_found">Tidak ada stasiun yang cocok dengan pencarian Anda</string>
+    <string name="favourites">FAVORIT</string>
+    <string name="uncategorized">Tanpa Kategori</string>
+    
+    <!-- Help Content Strings -->
+    <string name="help_intro_title">AltaVox Radio - Bantuan &amp; Fitur</string>
+    <string name="help_intro_body">Selamat datang di AltaVox Radio! Berikut penjelasan lengkap mengenai fitur-fitur yang tersedia dalam aplikasi ini.</string>
+    
+    <string name="help_streaming_title">1. Pemutaran Radio &amp; Playlist Kustom</string>
+    <string name="help_streaming_body">Aplikasi ini memutar siaran langsung secara mulus. Anda dapat menyesuaikan daftar stasiun menggunakan playlist URL M3U eksternal. Daftar stasiun akan disinkronkan, disimpan, dan dikelompokkan berdasarkan kategori langsung di aplikasi.</string>
+    
+    <string name="help_widgets_title">2. Widget Layar Utama</string>
+    <string name="help_widgets_body">AltaVox Radio menyediakan 2 pilihan widget:\n• Big Widget: Menampilkan logo stasiun radio yang sedang diputar, rincian format, tombol kontrol previous/next, serta tombol pintasan putar cepat untuk 2 stasiun terfavorit Anda.\n• Small Widget: Bilah horizontal ramping dengan tombol navigasi utama `[Prev] [Play/Pause] [Next]` yang dirancang untuk menghemat ruang.</string>
+    
+    <string name="help_widget_styles_title">3. Kustomisasi Widget Dinamis</string>
+    <string name="help_widget_styles_body">Ubah warna latar belakang (tint) dan tingkat transparansi (opacity) untuk setiap tipe widget langsung melalui menu Pengaturan Widget. Perubahan akan langsung diterapkan secara instan pada widget di layar utama Anda.</string>
+    
+    <string name="help_search_title">4. Pencarian Stasiun Gaya Spotify</string>
+    <string name="help_search_body">Gunakan kolom pencarian di bagian atas layar utama. Pencarian secara dinamis memfilter daftar stasiun radio berdasarkan nama stasiun maupun nama kategori untuk pengalaman pencarian yang super cepat dan responsif.</string>
+    
+    <string name="help_localization_title">5. Dukungan Dua Bahasa</string>
+    <string name="help_localization_body">Ubah seluruh tampilan antarmuka aplikasi antara Bahasa Inggris dan Bahasa Indonesia. Perubahan bahasa akan langsung diterapkan secara dinamis di seluruh halaman aplikasi.</string>
+    
+    <string name="help_advanced_title">6. Buffer &amp; Kustomisasi Tema Warna</string>
+    <string name="help_advanced_body">Atur warna aksen tema terang dan gelap sesuai keinginan Anda dengan color picker. Untuk jaringan internet yang lambat, aktifkan fitur Gunakan Buffer Lebih Besar pada Pengaturan Putar untuk meminimalkan jeda (suara terputus).</string>
+    
+    <string name="widget_settings_warning">Catatan: Mengubah warna atau opacity widget mungkin akan menghentikan streaming sementara. Anda dapat memutarnya kembali setelah selesai mengatur.</string>
+    <string name="custom_hex_code">Kode Warna Hex Kustom</string>
+    <string name="predefined_colors">Pilihan Warna Predefined</string>
+    <string name="invalid_hex_format">Format warna hex tidak valid</string>
+    <string name="apply">Terapkan</string>
+    <string name="save_widget_settings">Simpan Pengaturan Widget</string>
+    <string name="widget_settings_saved">Pengaturan widget berhasil disimpan!</string>
+    
+    <string name="search_online">Cari Radio Online</string>
+    <string name="radio_name_field">Nama Radio</string>
+    <string name="country_field">Negara</string>
+    <string name="search_btn">Cari</string>
+    <string name="searching">Mencari...</string>
+    <string name="no_results">Tidak ada radio ditemukan. Silakan sesuaikan pencarian Anda.</string>
+    <string name="add_to_list">Tambah ke Daftar</string>
+    <string name="select_category">Pilih Kategori</string>
+    <string name="station_added">Berhasil menambahkan stasiun!</string>
+    <string name="add_radio">Tambah Radio</string>
+    <string name="playlist_updated">Pembaruan Playlist Sukses</string>
+    <string name="city_field">Kota</string>
+    <string name="search_tip">Tips: Cari dengan nama radio, negara dan kota seakurat mungkin. Jangan sampai salah ketik. Jika tidak berhasil cukup cari nama radio saja.</string>
+    <string name="please_enter_criteria">Harap masukkan nama, negara, atau kota</string>
+    <string name="search_guidance">Masukkan kriteria pencarian untuk menemukan stasiun radio online.</string>
+    <string name="save_station_to_category">Simpan \"%1$s\" ke daftar radio lokal Anda di bawah kategori yang dipilih.</string>
+    <string name="category_label">Kategori</string>
+    <string name="provider_credit">Pencarian radio online disediakan oleh www.radio-browser.info</string>
+    <string name="add_category_title">Tambah Kategori</string>
+    <string name="edit_category_title">Ubah Kategori</string>
+    <string name="category_name_label">Nama Kategori</string>
+    <string name="add_btn">Tambah</string>
+    <string name="close_btn">Tutup</string>
+    <string name="select_color_title">Pilih %1$s</string>
+    <string name="color_primary">Utama</string>
+    <string name="color_secondary">Sekunder</string>
+    <string name="color_background">Latar Belakang</string>
+    <string name="hex_code_label">Kode Warna Hex</string>
+    <string name="failed_update_remote">Gagal memperbarui dari server jarak jauh.</string>
+    <string name="url_cannot_be_blank">URL tidak boleh kosong</string>
+    <string name="back_desc">Kembali</string>
+    <string name="stop_preview">Hentikan Pratinjau</string>
+    <string name="play_preview">Putar Pratinjau</string>
+    <string name="add_to_local_list">Tambahkan ke daftar lokal</string>
+    <string name="edit_radio_title">Ubah Radio</string>
+    <string name="name_label">Nama</string>
+    <string name="stream_url_label">URL Stream</string>
+    <string name="logo_url_label">URL Logo</string>
+    <string name="backup_saved">Cadangan berhasil disimpan</string>
+    <string name="backup_failed">Penyimpanan cadangan gagal: %1$s</string>
+    <string name="restore_successful">Pemulihan berhasil</string>
+    <string name="restore_failed">Pemulihan gagal: %1$s</string>
+</resources>

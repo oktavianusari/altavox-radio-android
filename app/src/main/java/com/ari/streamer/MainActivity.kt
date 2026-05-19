@@ -22,6 +22,8 @@ import com.ari.streamer.service.RadioPlaybackService
 import com.ari.streamer.ui.MainScreen
 import com.ari.streamer.ui.MainViewModel
 import com.ari.streamer.ui.SettingsScreen
+import com.ari.streamer.ui.HelpScreen
+import com.ari.streamer.ui.RadioSearchScreen
 import com.ari.streamer.ui.theme.StreamerTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -32,6 +34,19 @@ import java.io.OutputStream
 class MainActivity : ComponentActivity() {
     private val viewModel: MainViewModel by viewModels()
 
+    private fun getLocalizedText(resId: Int, vararg args: Any): String {
+        val appLanguage = viewModel.appLanguage.value
+        val locale = java.util.Locale(appLanguage)
+        val config = android.content.res.Configuration(resources.configuration)
+        config.setLocale(locale)
+        val localizedContext = createConfigurationContext(config)
+        return if (args.isEmpty()) {
+            localizedContext.getString(resId)
+        } else {
+            localizedContext.getString(resId, *args)
+        }
+    }
+
     private val createDocumentLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("audio/x-mpegurl")) { uri ->
         uri?.let {
             lifecycleScope.launch {
@@ -39,9 +54,9 @@ class MainActivity : ComponentActivity() {
                     contentResolver.openOutputStream(it)?.use { outputStream ->
                         viewModel.exportToM3u(outputStream)
                     }
-                    Toast.makeText(this@MainActivity, "Backup saved", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getLocalizedText(R.string.backup_saved), Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(this@MainActivity, "Backup failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getLocalizedText(R.string.backup_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -54,9 +69,9 @@ class MainActivity : ComponentActivity() {
                     contentResolver.openInputStream(it)?.use { inputStream ->
                         viewModel.importFromM3u(inputStream)
                     }
-                    Toast.makeText(this@MainActivity, "Restore successful", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getLocalizedText(R.string.restore_successful), Toast.LENGTH_SHORT).show()
                 } catch (e: Exception) {
-                    Toast.makeText(this@MainActivity, "Restore failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, getLocalizedText(R.string.restore_failed, e.message ?: ""), Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -78,45 +93,81 @@ class MainActivity : ComponentActivity() {
         startService(intent)
 
         setContent {
-            val themeMode by viewModel.themeMode.collectAsState()
-            val lightColors by viewModel.lightThemeColors.collectAsState()
-            val darkColors by viewModel.darkThemeColors.collectAsState()
-
-            val isDarkTheme = when (themeMode) {
-                AppTheme.SYSTEM -> isSystemInDarkTheme()
-                AppTheme.LIGHT -> false
-                AppTheme.DARK -> true
+            val appLanguage by viewModel.appLanguage.collectAsState()
+            val context = androidx.compose.ui.platform.LocalContext.current
+            
+            val localizedContext = androidx.compose.runtime.remember(appLanguage) {
+                val locale = java.util.Locale(appLanguage)
+                java.util.Locale.setDefault(locale)
+                val config = android.content.res.Configuration(context.resources.configuration)
+                config.setLocale(locale)
+                context.createConfigurationContext(config)
             }
 
-            val currentColors = if (isDarkTheme) darkColors else lightColors
+            val localizedConfiguration = androidx.compose.runtime.remember(appLanguage) {
+                val locale = java.util.Locale(appLanguage)
+                val config = android.content.res.Configuration(context.resources.configuration)
+                config.setLocale(locale)
+                config
+            }
 
-            StreamerTheme(
-                darkTheme = isDarkTheme,
-                primaryColorHex = currentColors.primaryHex,
-                secondaryColorHex = currentColors.secondaryHex,
-                backgroundColorHex = currentColors.backgroundHex
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalContext provides localizedContext,
+                androidx.compose.ui.platform.LocalConfiguration provides localizedConfiguration
             ) {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    val navController = rememberNavController()
+                val themeMode by viewModel.themeMode.collectAsState()
+                val lightColors by viewModel.lightThemeColors.collectAsState()
+                val darkColors by viewModel.darkThemeColors.collectAsState()
 
-                    NavHost(navController = navController, startDestination = "main") {
-                        composable("main") {
-                            MainScreen(
-                                viewModel = viewModel,
-                                onNavigateToSettings = { navController.navigate("settings") }
-                            )
-                        }
-                        composable("settings") {
-                            SettingsScreen(
-                                viewModel = viewModel,
-                                onNavigateBack = { navController.popBackStack() },
-                                onBackupClick = {
-                                    createDocumentLauncher.launch("backup_radio.m3u")
-                                },
-                                onRestoreClick = {
-                                    openDocumentLauncher.launch(arrayOf("*/*"))
-                                }
-                            )
+                val isDarkTheme = when (themeMode) {
+                    AppTheme.SYSTEM -> isSystemInDarkTheme()
+                    AppTheme.LIGHT -> false
+                    AppTheme.DARK -> true
+                }
+
+                val currentColors = if (isDarkTheme) darkColors else lightColors
+
+                StreamerTheme(
+                    darkTheme = isDarkTheme,
+                    primaryColorHex = currentColors.primaryHex,
+                    secondaryColorHex = currentColors.secondaryHex,
+                    backgroundColorHex = currentColors.backgroundHex
+                ) {
+                    Surface(modifier = Modifier.fillMaxSize()) {
+                        val navController = rememberNavController()
+
+                        NavHost(navController = navController, startDestination = "main") {
+                            composable("main") {
+                                MainScreen(
+                                    viewModel = viewModel,
+                                    onNavigateToSettings = { navController.navigate("settings") },
+                                    onNavigateToSearch = { navController.navigate("radio_search") }
+                                )
+                            }
+                            composable("radio_search") {
+                                RadioSearchScreen(
+                                    viewModel = viewModel,
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable("settings") {
+                                SettingsScreen(
+                                    viewModel = viewModel,
+                                    onNavigateBack = { navController.popBackStack() },
+                                    onNavigateToHelp = { navController.navigate("help") },
+                                    onBackupClick = {
+                                        createDocumentLauncher.launch("backup_radio.m3u")
+                                    },
+                                    onRestoreClick = {
+                                        openDocumentLauncher.launch(arrayOf("*/*"))
+                                    }
+                                )
+                            }
+                            composable("help") {
+                                HelpScreen(
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
                         }
                     }
                 }

@@ -69,10 +69,52 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val tvGradientColor2 = userPreferences.tvGradientColor2Flow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "#121212")
 
+    val widget1BgColor = userPreferences.widget1BgColorFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "#151517")
+
+    val widget1Opacity = userPreferences.widget1OpacityFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.9f)
+
+    val widget2BgColor = userPreferences.widget2BgColorFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "#151517")
+
+    val widget2Opacity = userPreferences.widget2OpacityFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.9f)
+
+    val appLanguage = userPreferences.appLanguageFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
+
     enum class UpdateStatus { Idle, Loading, Success, Error }
     
     private val _updateStatus = MutableStateFlow(UpdateStatus.Idle)
     val updateStatus = _updateStatus.asStateFlow()
+
+    fun updateAllWidgets() {
+        val context = getApplication<Application>()
+        val widgetManager = android.appwidget.AppWidgetManager.getInstance(context)
+        
+        // Large Widget
+        val component1 = android.content.ComponentName(context, com.ari.streamer.widget.RadioWidgetProvider::class.java)
+        val ids1 = widgetManager.getAppWidgetIds(component1)
+        if (ids1.isNotEmpty()) {
+            val intent = android.content.Intent(context, com.ari.streamer.widget.RadioWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids1)
+            }
+            context.sendBroadcast(intent)
+        }
+
+        // Compact Widget
+        val component2 = android.content.ComponentName(context, com.ari.streamer.widget.CompactRadioWidgetProvider::class.java)
+        val ids2 = widgetManager.getAppWidgetIds(component2)
+        if (ids2.isNotEmpty()) {
+            val intent = android.content.Intent(context, com.ari.streamer.widget.CompactRadioWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids2)
+            }
+            context.sendBroadcast(intent)
+        }
+    }
 
     fun resetUpdateStatus() {
         _updateStatus.value = UpdateStatus.Idle
@@ -147,6 +189,48 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch { userPreferences.setTvGradientColor2(colorHex) }
     }
 
+    fun setWidget1BgColor(colorHex: String) {
+        viewModelScope.launch { 
+            userPreferences.setWidget1BgColor(colorHex)
+            updateAllWidgets()
+        }
+    }
+
+    fun setWidget1Opacity(opacity: Float) {
+        viewModelScope.launch { 
+            userPreferences.setWidget1Opacity(opacity)
+            updateAllWidgets()
+        }
+    }
+
+    fun setWidget2BgColor(colorHex: String) {
+        viewModelScope.launch { 
+            userPreferences.setWidget2BgColor(colorHex)
+            updateAllWidgets()
+        }
+    }
+
+    fun setWidget2Opacity(opacity: Float) {
+        viewModelScope.launch { 
+            userPreferences.setWidget2Opacity(opacity)
+            updateAllWidgets()
+        }
+    }
+
+    fun saveWidgetSettings(w1BgColor: String, w1Opacity: Float, w2BgColor: String, w2Opacity: Float) {
+        viewModelScope.launch {
+            userPreferences.setWidget1BgColor(w1BgColor)
+            userPreferences.setWidget1Opacity(w1Opacity)
+            userPreferences.setWidget2BgColor(w2BgColor)
+            userPreferences.setWidget2Opacity(w2Opacity)
+            updateAllWidgets()
+        }
+    }
+
+    fun setAppLanguage(lang: String) {
+        viewModelScope.launch { userPreferences.setAppLanguage(lang) }
+    }
+
     suspend fun importFromM3u(inputStream: InputStream) = withContext(Dispatchers.IO) {
         val entries = M3uParser.parse(inputStream)
         
@@ -191,65 +275,43 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 if (inputStream != null) {
                     val entries = M3uParser.parse(inputStream)
                     
-                    val currentCategories = stationDao.getAllCategories().first()
-                    val existingStations = stationDao.getAllStations().first().associateBy { it.streamUrl }.toMutableMap()
-                    val existingCategories = currentCategories.associateBy { it.name.trim().lowercase() }.toMutableMap()
+                    // Clear all existing categories and stations as requested
+                    stationDao.clearAllStations()
+                    stationDao.clearAllCategories()
+                    
                     val newCategoriesMap = mutableMapOf<String, Long>()
+                    var stationCounter = 0
 
                     entries.forEach { entry ->
                         val catName = entry.categoryName?.trim() ?: "Uncategorized"
                         val catKey = catName.lowercase()
-                        val catId = existingCategories[catKey]?.id ?: newCategoriesMap[catKey] ?: run {
-                            val dbCat = stationDao.getCategoryByName(catName)
-                            if (dbCat != null) {
-                                newCategoriesMap[catKey] = dbCat.id
-                                dbCat.id
-                            } else {
-                                val id = stationDao.insertCategory(
-                                    Category(
-                                        name = catName,
-                                        orderIndex = existingCategories.size + newCategoriesMap.size
-                                    )
-                                )
-                                newCategoriesMap[catKey] = id
-                                id
-                            }
-                        }
-
-                        if (!existingStations.containsKey(entry.url)) {
-                            val newId = stationDao.insertStation(
-                                Station(
-                                    name = entry.title,
-                                    streamUrl = entry.url,
-                                    logoUrl = entry.logoUrl,
-                                    categoryId = catId,
-                                    orderIndex = existingStations.size
+                        val catId = newCategoriesMap[catKey] ?: run {
+                            val id = stationDao.insertCategory(
+                                Category(
+                                    name = catName,
+                                    orderIndex = newCategoriesMap.size
                                 )
                             )
-                            existingStations[entry.url] = Station(
-                                id = newId,
+                            newCategoriesMap[catKey] = id
+                            id
+                        }
+
+                        stationDao.insertStation(
+                            Station(
                                 name = entry.title,
                                 streamUrl = entry.url,
                                 logoUrl = entry.logoUrl,
                                 categoryId = catId,
-                                orderIndex = existingStations.size
+                                orderIndex = stationCounter++
                             )
-                        } else {
-                            val existing = existingStations[entry.url]!!
-                            val updated = existing.copy(
-                                name = entry.title,
-                                logoUrl = entry.logoUrl,
-                                categoryId = catId
-                            )
-                            stationDao.updateStation(updated)
-                            existingStations[entry.url] = updated
-                        }
+                        )
                     }
                     _updateStatus.value = UpdateStatus.Success
                 } else {
                     _updateStatus.value = UpdateStatus.Error
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 _updateStatus.value = UpdateStatus.Error
             }
         }
