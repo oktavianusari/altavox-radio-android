@@ -6,7 +6,7 @@
 
 ## 🇬🇧 English
 
-Modern internet radio app for Android & Android TV inspired by Transistor, featuring stable streaming, dynamic playlists, and a customizable OneUI-style interface.
+Modern internet radio app for Android & Android TV inspired by Transistor. Featuring stable streaming, dynamic playlists, and a customizable interface.
 
 > Minimum Android 7.0 (Nougat)  
 > Supports user-hosted `.m3u` playlists
@@ -34,7 +34,7 @@ Modern internet radio app for Android & Android TV inspired by Transistor, featu
 
 ## 🇮🇩 Bahasa Indonesia
 
-Aplikasi radio internet modern untuk Android & Android TV yang terinspirasi dari Transistor dengan streaming stabil, playlist dinamis, dan tampilan ala OneUI yang fleksibel.
+Aplikasi radio internet modern untuk Android & Android TV yang terinspirasi dari Transistor. Menawarkan streaming stabil, playlist dinamis, dan tampilan yang fleksibel.
 
 > Minimum Android 7.0 (Nougat)  
 > Mendukung playlist `.m3u` dari server pengguna
