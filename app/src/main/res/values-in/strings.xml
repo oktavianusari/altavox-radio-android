@@ -115,4 +115,29 @@
     <string name="backup_failed">Penyimpanan cadangan gagal: %1$s</string>
     <string name="restore_successful">Pemulihan berhasil</string>
     <string name="restore_failed">Pemulihan gagal: %1$s</string>
+    
+    <string name="language_system">Mengikuti Sistem</string>
+    <string name="widget_3_label">Widget Favorit</string>
+    <string name="widget_bg">Warna Latar Widget</string>
+    <string name="widget_opacity_label">Opacity Widget</string>
+    
+    <string name="bulk_delete_title">Hapus Massal</string>
+    <string name="bulk_delete_confirm_title">Hapus Stasiun Radio</string>
+    <string name="bulk_delete_confirm_desc">Apakah Anda yakin ingin menghapus %1$d stasiun radio terpilih?</string>
+    <string name="items_selected">%1$d Terpilih</string>
+    <string name="select_all">Pilih Semua</string>
+    <string name="deselect_all">Batal Pilih Semua</string>
+    
+    <!-- Context Menu -->
+    <string name="menu_play">Putar</string>
+    <string name="menu_edit">Ubah</string>
+    <string name="menu_delete">Hapus</string>
+    <string name="menu_select_multiple">Pilih Banyak (Hapus Massal)</string>
+    
+    <!-- Dropdown & Add Manual -->
+    <string name="menu_search_online">Cari Online</string>
+    <string name="menu_add_manually">Tambah Manual</string>
+    <string name="add_manual_radio_title">Tambah Radio Manual</string>
+    <string name="name_cannot_be_blank">Nama radio tidak boleh kosong</string>
+    <string name="radio_added_successfully">Berhasil menambahkan radio</string>
 </resources>

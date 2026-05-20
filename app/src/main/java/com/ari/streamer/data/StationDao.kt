@@ -41,6 +41,9 @@ interface StationDao {
     @Delete
     suspend fun deleteStation(station: Station)
 
+    @Query("DELETE FROM stations WHERE id IN (:ids)")
+    suspend fun deleteStationsByIds(ids: List<Long>)
+
     @Query("DELETE FROM stations")
     suspend fun clearAllStations()
 

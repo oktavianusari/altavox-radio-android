@@ -19,7 +19,8 @@ import com.ari.streamer.ui.theme.parseColor
 @Composable
 fun TvMainScreen(
     viewModel: MainViewModel,
-    onNavigateToSettings: () -> Unit
+    onNavigateToSettings: () -> Unit,
+    onNavigateToSearch: () -> Unit
 ) {
     val playbackState by viewModel.playbackManager.playbackState.collectAsState()
     val stations by viewModel.stations.collectAsState()
@@ -71,7 +72,9 @@ fun TvMainScreen(
                         if (isPlaying) viewModel.playbackManager.pause()
                         else viewModel.playbackManager.play()
                     },
-                    onSettingsClick = onNavigateToSettings
+                    onSettingsClick = onNavigateToSettings,
+                    onSearchClick = onNavigateToSearch,
+                    viewModel = viewModel
                 )
             }
         }

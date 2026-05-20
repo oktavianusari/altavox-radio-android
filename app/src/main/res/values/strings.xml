@@ -115,4 +115,29 @@
     <string name="backup_failed">Backup failed: %1$s</string>
     <string name="restore_successful">Restore successful</string>
     <string name="restore_failed">Restore failed: %1$s</string>
+    
+    <string name="language_system">System Default</string>
+    <string name="widget_3_label">Favorites Widget</string>
+    <string name="widget_bg">Widget Background Color</string>
+    <string name="widget_opacity_label">Widget Opacity</string>
+    
+    <string name="bulk_delete_title">Bulk Delete</string>
+    <string name="bulk_delete_confirm_title">Delete Radio Stations</string>
+    <string name="bulk_delete_confirm_desc">Are you sure you want to delete the %1$d selected radio stations?</string>
+    <string name="items_selected">%1$d Selected</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    
+    <!-- Context Menu -->
+    <string name="menu_play">Play</string>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_delete">Delete</string>
+    <string name="menu_select_multiple">Select Multiple</string>
+    
+    <!-- Dropdown & Add Manual -->
+    <string name="menu_search_online">Search Online</string>
+    <string name="menu_add_manually">Add Manually</string>
+    <string name="add_manual_radio_title">Add Radio Manually</string>
+    <string name="name_cannot_be_blank">Radio name cannot be blank</string>
+    <string name="radio_added_successfully">Radio added successfully</string>
 </resources>

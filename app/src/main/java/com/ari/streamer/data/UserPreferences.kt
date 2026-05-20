@@ -41,6 +41,7 @@ class UserPreferences(private val context: Context) {
         val WIDGET_2_OPACITY = androidx.datastore.preferences.core.floatPreferencesKey("widget_2_opacity")
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val LAST_PLAYED_STATION_ID = androidx.datastore.preferences.core.longPreferencesKey("last_played_station_id")
+        val M3U_URL = stringPreferencesKey("m3u_url")
     }
 
     val themeModeFlow: Flow<AppTheme> = context.dataStore.data.map { preferences ->
@@ -92,11 +93,15 @@ class UserPreferences(private val context: Context) {
     }
 
     val appLanguageFlow: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[APP_LANGUAGE] ?: "en"
+        preferences[APP_LANGUAGE] ?: "auto"
     }
 
     val lastPlayedStationIdFlow: Flow<Long> = context.dataStore.data.map { preferences ->
         preferences[LAST_PLAYED_STATION_ID] ?: -1L
+    }
+
+    val m3uUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[M3U_URL] ?: "https://pastebin.com/raw/i4YM5tAL"
     }
 
     suspend fun setThemeMode(mode: AppTheme) {
@@ -172,6 +177,12 @@ class UserPreferences(private val context: Context) {
     suspend fun setLastPlayedStationId(stationId: Long) {
         context.dataStore.edit { preferences ->
             preferences[LAST_PLAYED_STATION_ID] = stationId
+        }
+    }
+
+    suspend fun setM3uUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            preferences[M3U_URL] = url
         }
     }
 }

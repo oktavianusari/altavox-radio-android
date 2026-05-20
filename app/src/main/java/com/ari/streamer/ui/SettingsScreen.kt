@@ -53,7 +53,8 @@ fun SettingsScreen(
     var localWidget2BgColor by remember(widget2BgColor) { mutableStateOf(widget2BgColor) }
     var localWidget2Opacity by remember(widget2Opacity) { mutableStateOf(widget2Opacity) }
     
-    var m3uUrl by remember { mutableStateOf("https://pastebin.com/raw/i4YM5tAL") }
+    val savedM3uUrl by viewModel.m3uUrl.collectAsState()
+    var m3uUrl by remember(savedM3uUrl) { mutableStateOf(savedM3uUrl) }
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var categoryToEdit by remember { mutableStateOf<com.ari.streamer.data.Category?>(null) }
     var categoryInputName by remember { mutableStateOf("") }
@@ -175,8 +176,8 @@ fun SettingsScreen(
                 modifier = Modifier.padding(vertical = 4.dp)
             )
             
-            // Widget 1 (Large Widget) Background and Opacity
-            ColorPickerRow(stringResource(R.string.widget_1_bg), localWidget1BgColor) { newHex ->
+            // Unified Widgets Background and Opacity
+            ColorPickerRow(stringResource(R.string.widget_bg), localWidget1BgColor) { newHex ->
                 localWidget1BgColor = newHex
             }
             Column(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -184,7 +185,7 @@ fun SettingsScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(stringResource(R.string.widget_1_opacity_label), style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.widget_opacity_label), style = MaterialTheme.typography.bodyMedium)
                     Text("${(localWidget1Opacity * 100).toInt()}%", style = MaterialTheme.typography.bodyMedium)
                 }
                 Slider(
@@ -194,34 +195,13 @@ fun SettingsScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Widget 2 (Compact Widget) Background and Opacity
-            ColorPickerRow(stringResource(R.string.widget_2_bg), localWidget2BgColor) { newHex ->
-                localWidget2BgColor = newHex
-            }
-            Column(modifier = Modifier.padding(vertical = 4.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(stringResource(R.string.widget_2_opacity_label), style = MaterialTheme.typography.bodyMedium)
-                    Text("${(localWidget2Opacity * 100).toInt()}%", style = MaterialTheme.typography.bodyMedium)
-                }
-                Slider(
-                    value = localWidget2Opacity,
-                    onValueChange = { localWidget2Opacity = it },
-                    valueRange = 0.0f..1.0f
-                )
-            }
-
             Button(
                 onClick = {
                     viewModel.saveWidgetSettings(
                         localWidget1BgColor,
                         localWidget1Opacity,
-                        localWidget2BgColor,
-                        localWidget2Opacity
+                        localWidget1BgColor,
+                        localWidget1Opacity
                     )
                     Toast.makeText(context, context.getString(R.string.widget_settings_saved), Toast.LENGTH_SHORT).show()
                 },
@@ -235,7 +215,12 @@ fun SettingsScreen(
 
             // 4. LANGUAGE SETTINGS
             Text(stringResource(R.string.language), style = MaterialTheme.typography.titleMedium)
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                FilterChip(
+                    selected = appLanguage == "auto",
+                    onClick = { viewModel.setAppLanguage("auto") },
+                    label = { Text(stringResource(R.string.language_system)) }
+                )
                 FilterChip(
                     selected = appLanguage == "en",
                     onClick = { viewModel.setAppLanguage("en") },
@@ -244,7 +229,7 @@ fun SettingsScreen(
                 FilterChip(
                     selected = appLanguage == "id",
                     onClick = { viewModel.setAppLanguage("id") },
-                    label = { Text("Bahasa Indonesia") }
+                    label = { Text("Indonesia") }
                 )
             }
 
@@ -357,6 +342,7 @@ fun SettingsScreen(
                 Button(
                     onClick = {
                         showWarningDialog = false
+                        viewModel.setM3uUrl(m3uUrl)
                         viewModel.updateFromRemoteM3u(m3uUrl)
                     }
                 ) {

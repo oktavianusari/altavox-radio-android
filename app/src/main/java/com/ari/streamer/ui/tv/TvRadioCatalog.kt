@@ -17,9 +17,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.text.style.TextAlign
+import com.ari.streamer.ui.MainViewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,8 +58,26 @@ fun TvRadioCatalog(
     bitrate: String?,
     onStationClick: (Station) -> Unit,
     onPlayPauseClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    viewModel: MainViewModel
 ) {
+    val context = LocalContext.current
+    val updateStatus by viewModel.updateStatus.collectAsState()
+
+    androidx.compose.runtime.LaunchedEffect(updateStatus) {
+        when (updateStatus) {
+            MainViewModel.UpdateStatus.Success -> {
+                android.widget.Toast.makeText(context, "Playlist updated successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                viewModel.resetUpdateStatus()
+            }
+            MainViewModel.UpdateStatus.Error -> {
+                android.widget.Toast.makeText(context, "Failed to update playlist.", android.widget.Toast.LENGTH_SHORT).show()
+                viewModel.resetUpdateStatus()
+            }
+            else -> {}
+        }
+    }
     // Time state
     var currentTime by androidx.compose.runtime.remember { 
         androidx.compose.runtime.mutableStateOf(
@@ -114,6 +138,25 @@ fun TvRadioCatalog(
                     )
 
                     Card(
+                        onClick = onSearchClick,
+                        modifier = Modifier.size(44.dp),
+                        scale = CardDefaults.scale(focusedScale = 1.1f),
+                        colors = CardDefaults.colors(
+                            containerColor = Color.White.copy(alpha = 0.08f),
+                            focusedContainerColor = Color.White.copy(alpha = 0.2f)
+                        )
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Radio",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    Card(
                         onClick = onSettingsClick,
                         modifier = Modifier.size(44.dp),
                         scale = CardDefaults.scale(focusedScale = 1.1f),
@@ -135,12 +178,183 @@ fun TvRadioCatalog(
             }
         }
 
-        categories.forEach { category ->
-            val categoryStations = stationsByCategory[category.id] ?: emptyList()
-            if (categoryStations.isNotEmpty()) {
+        if (stations.isEmpty()) {
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 40.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Welcome to AltaVox Radio!",
+                        color = Color.White,
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Your catalog is empty. You can sync M3U playlist from settings or search for online radio stations now.",
+                        color = Color.White.copy(alpha = 0.6f),
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 48.dp)
+                    )
+                    Spacer(modifier = Modifier.height(32.dp))
+                    
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(24.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Card 1: Sync Now
+                        val m3uUrl by viewModel.m3uUrl.collectAsState()
+
+                        Card(
+                            onClick = {
+                                if (updateStatus != MainViewModel.UpdateStatus.Loading) {
+                                    viewModel.updateFromRemoteM3u(m3uUrl)
+                                }
+                            },
+                            modifier = Modifier
+                                .width(220.dp)
+                                .height(120.dp),
+                            scale = CardDefaults.scale(focusedScale = 1.05f),
+                            colors = CardDefaults.colors(
+                                containerColor = Color.White.copy(alpha = 0.1f),
+                                focusedContainerColor = Color.White.copy(alpha = 0.25f)
+                            ),
+                            border = CardDefaults.border(
+                                focusedBorder = Border(
+                                    border = androidx.compose.foundation.BorderStroke(2.dp, Color.White),
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                                )
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                if (updateStatus == MainViewModel.UpdateStatus.Loading) {
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        modifier = Modifier.size(28.dp),
+                                        strokeWidth = 2.dp,
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(text = "Downloading...", color = Color.White, fontSize = 12.sp)
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.Refresh,
+                                        contentDescription = "Sync",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "SYNC PLAYLIST NOW",
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 12.sp
+                                    )
+                                }
+                            }
+                        }
+
+                        // Card 2: Search Online Radio
+                        Card(
+                            onClick = onSearchClick,
+                            modifier = Modifier
+                                .width(220.dp)
+                                .height(120.dp),
+                            scale = CardDefaults.scale(focusedScale = 1.05f),
+                            colors = CardDefaults.colors(
+                                containerColor = Color.White.copy(alpha = 0.1f),
+                                focusedContainerColor = Color.White.copy(alpha = 0.25f)
+                            ),
+                            border = CardDefaults.border(
+                                focusedBorder = Border(
+                                    border = androidx.compose.foundation.BorderStroke(2.dp, Color.White),
+                                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                                )
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "SEARCH ONLINE RADIO",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            categories.forEach { category ->
+                val categoryStations = stationsByCategory[category.id] ?: emptyList()
+                if (categoryStations.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = category.name.uppercase(),
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            letterSpacing = 1.5.sp,
+                            modifier = Modifier.padding(bottom = 16.dp, top = 24.dp)
+                        )
+                    }
+
+                    item {
+                        TvLazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            val chunkedStations = categoryStations.chunked(2)
+                            items(chunkedStations) { pair ->
+                                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                    val isFirstCurrent = currentStation?.id == pair[0].id
+                                    TvStationCard(
+                                        station = pair[0],
+                                        isCurrent = isFirstCurrent,
+                                        isPlaying = isPlaying,
+                                        onClick = { onStationClick(pair[0]) }
+                                    )
+                                    if (pair.size > 1) {
+                                        val isSecondCurrent = currentStation?.id == pair[1].id
+                                        TvStationCard(
+                                            station = pair[1],
+                                            isCurrent = isSecondCurrent,
+                                            isPlaying = isPlaying,
+                                            onClick = { onStationClick(pair[1]) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Uncategorized stations
+            val uncategorizedStations = stationsByCategory[null] ?: emptyList()
+            if (uncategorizedStations.isNotEmpty()) {
                 item {
                     Text(
-                        text = category.name.uppercase(),
+                        text = "OTHER STATIONS",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -154,7 +368,7 @@ fun TvRadioCatalog(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        val chunkedStations = categoryStations.chunked(2)
+                        val chunkedStations = uncategorizedStations.chunked(2)
                         items(chunkedStations) { pair ->
                             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                                 val isFirstCurrent = currentStation?.id == pair[0].id
@@ -173,50 +387,6 @@ fun TvRadioCatalog(
                                         onClick = { onStationClick(pair[1]) }
                                     )
                                 }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Uncategorized stations
-        val uncategorizedStations = stationsByCategory[null] ?: emptyList()
-        if (uncategorizedStations.isNotEmpty()) {
-            item {
-                Text(
-                    text = "OTHER STATIONS",
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.5.sp,
-                    modifier = Modifier.padding(bottom = 16.dp, top = 24.dp)
-                )
-            }
-
-            item {
-                TvLazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val chunkedStations = uncategorizedStations.chunked(2)
-                    items(chunkedStations) { pair ->
-                        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                            val isFirstCurrent = currentStation?.id == pair[0].id
-                            TvStationCard(
-                                station = pair[0],
-                                isCurrent = isFirstCurrent,
-                                isPlaying = isPlaying,
-                                onClick = { onStationClick(pair[0]) }
-                            )
-                            if (pair.size > 1) {
-                                val isSecondCurrent = currentStation?.id == pair[1].id
-                                TvStationCard(
-                                    station = pair[1],
-                                    isCurrent = isSecondCurrent,
-                                    isPlaying = isPlaying,
-                                    onClick = { onStationClick(pair[1]) }
-                                )
                             }
                         }
                     }

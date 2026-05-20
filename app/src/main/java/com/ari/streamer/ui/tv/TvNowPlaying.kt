@@ -42,11 +42,11 @@ fun TvNowPlaying(
     bitrate: String?,
     onPlayPauseClick: () -> Unit
 ) {
-    // Glassmorphism pill container
+    // Glassmorphism container
     Box(
         modifier = Modifier
-            .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(24.dp))
-            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(24.dp))
+            .background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(8.dp))
+            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
         Row(

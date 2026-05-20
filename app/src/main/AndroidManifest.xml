@@ -84,6 +84,23 @@
                 android:resource="@xml/compact_radio_widget_info" />
         </receiver>
 
+        <receiver
+            android:name=".widget.FavoriteIconsRadioWidgetProvider"
+            android:label="@string/widget_3_label"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.ari.streamer.widget.ACTION_PLAY_PAUSE" />
+                <action android:name="com.ari.streamer.widget.ACTION_NEXT" />
+                <action android:name="com.ari.streamer.widget.ACTION_PREVIOUS" />
+                <action android:name="com.ari.streamer.widget.ACTION_PLAY_STATION" />
+                <action android:name="com.ari.streamer.widget.ACTION_UPDATE_STATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/favorite_icons_radio_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

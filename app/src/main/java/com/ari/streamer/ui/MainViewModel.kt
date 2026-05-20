@@ -82,7 +82,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.9f)
 
     val appLanguage = userPreferences.appLanguageFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "en")
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "auto")
+
+    val m3uUrl = userPreferences.m3uUrlFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "https://pastebin.com/raw/i4YM5tAL")
 
     enum class UpdateStatus { Idle, Loading, Success, Error }
     
@@ -111,6 +114,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val intent = android.content.Intent(context, com.ari.streamer.widget.CompactRadioWidgetProvider::class.java).apply {
                 action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
                 putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids2)
+            }
+            context.sendBroadcast(intent)
+        }
+
+        // Favorites Widget (Widget 3)
+        val component3 = android.content.ComponentName(context, com.ari.streamer.widget.FavoriteIconsRadioWidgetProvider::class.java)
+        val ids3 = widgetManager.getAppWidgetIds(component3)
+        if (ids3.isNotEmpty()) {
+            val intent = android.content.Intent(context, com.ari.streamer.widget.FavoriteIconsRadioWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids3)
             }
             context.sendBroadcast(intent)
         }
@@ -158,7 +172,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun deleteStation(station: Station) {
-        viewModelScope.launch { stationDao.deleteStation(station) }
+        viewModelScope.launch { 
+            stationDao.deleteStation(station)
+            updateAllWidgets()
+        }
+    }
+
+    fun deleteStations(ids: List<Long>) {
+        viewModelScope.launch {
+            stationDao.deleteStationsByIds(ids)
+            updateAllWidgets()
+        }
     }
 
     fun updateStation(station: Station) {
@@ -229,6 +253,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setAppLanguage(lang: String) {
         viewModelScope.launch { userPreferences.setAppLanguage(lang) }
+    }
+
+    fun setM3uUrl(url: String) {
+        viewModelScope.launch { userPreferences.setM3uUrl(url) }
     }
 
     suspend fun importFromM3u(inputStream: InputStream) = withContext(Dispatchers.IO) {

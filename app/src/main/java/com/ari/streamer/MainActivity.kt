@@ -24,6 +24,7 @@ import com.ari.streamer.ui.MainViewModel
 import com.ari.streamer.ui.SettingsScreen
 import com.ari.streamer.ui.HelpScreen
 import com.ari.streamer.ui.RadioSearchScreen
+import com.ari.streamer.ui.AddManualRadioScreen
 import com.ari.streamer.ui.theme.StreamerTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,7 +37,12 @@ class MainActivity : ComponentActivity() {
 
     private fun getLocalizedText(resId: Int, vararg args: Any): String {
         val appLanguage = viewModel.appLanguage.value
-        val locale = java.util.Locale(appLanguage)
+        val locale = if (appLanguage == "auto") {
+            androidx.core.os.ConfigurationCompat.getLocales(android.content.res.Resources.getSystem().configuration).get(0)
+                ?: java.util.Locale.getDefault()
+        } else {
+            java.util.Locale(appLanguage)
+        }
         val config = android.content.res.Configuration(resources.configuration)
         config.setLocale(locale)
         val localizedContext = createConfigurationContext(config)
@@ -97,7 +103,12 @@ class MainActivity : ComponentActivity() {
             val context = androidx.compose.ui.platform.LocalContext.current
             
             val localizedContext = androidx.compose.runtime.remember(appLanguage) {
-                val locale = java.util.Locale(appLanguage)
+                val locale = if (appLanguage == "auto") {
+                    androidx.core.os.ConfigurationCompat.getLocales(android.content.res.Resources.getSystem().configuration).get(0)
+                        ?: java.util.Locale.getDefault()
+                } else {
+                    java.util.Locale(appLanguage)
+                }
                 java.util.Locale.setDefault(locale)
                 val config = android.content.res.Configuration(context.resources.configuration)
                 config.setLocale(locale)
@@ -105,7 +116,12 @@ class MainActivity : ComponentActivity() {
             }
 
             val localizedConfiguration = androidx.compose.runtime.remember(appLanguage) {
-                val locale = java.util.Locale(appLanguage)
+                val locale = if (appLanguage == "auto") {
+                    androidx.core.os.ConfigurationCompat.getLocales(android.content.res.Resources.getSystem().configuration).get(0)
+                        ?: java.util.Locale.getDefault()
+                } else {
+                    java.util.Locale(appLanguage)
+                }
                 val config = android.content.res.Configuration(context.resources.configuration)
                 config.setLocale(locale)
                 config
@@ -141,7 +157,8 @@ class MainActivity : ComponentActivity() {
                                 MainScreen(
                                     viewModel = viewModel,
                                     onNavigateToSettings = { navController.navigate("settings") },
-                                    onNavigateToSearch = { navController.navigate("radio_search") }
+                                    onNavigateToSearch = { navController.navigate("radio_search") },
+                                    onNavigateToAddManual = { navController.navigate("add_manual_radio") }
                                 )
                             }
                             composable("radio_search") {
@@ -165,6 +182,12 @@ class MainActivity : ComponentActivity() {
                             }
                             composable("help") {
                                 HelpScreen(
+                                    onNavigateBack = { navController.popBackStack() }
+                                )
+                            }
+                            composable("add_manual_radio") {
+                                AddManualRadioScreen(
+                                    viewModel = viewModel,
                                     onNavigateBack = { navController.popBackStack() }
                                 )
                             }

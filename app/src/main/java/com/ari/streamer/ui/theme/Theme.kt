@@ -25,7 +25,7 @@ fun parseColor(colorString: String, defaultColor: Color): Color {
 @Composable
 fun StreamerTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = true,
     primaryColorHex: String? = null,
     secondaryColorHex: String? = null,
     backgroundColorHex: String? = null,
@@ -35,24 +35,37 @@ fun StreamerTheme(
     val defaultSecondary = if (darkTheme) Color(0xFF03DAC5) else Color(0xFF03DAC5)
     val defaultBackground = if (darkTheme) Color(0xFF121212) else Color(0xFFFFFBFE)
 
-    val primary = primaryColorHex?.let { parseColor(it, defaultPrimary) } ?: defaultPrimary
-    val secondary = secondaryColorHex?.let { parseColor(it, defaultSecondary) } ?: defaultSecondary
-    val background = backgroundColorHex?.let { parseColor(it, defaultBackground) } ?: defaultBackground
+    // Check if user has explicitly set custom colors
+    val hasCustomColors = primaryColorHex != null || secondaryColorHex != null || backgroundColorHex != null
 
-    val colorScheme = if (darkTheme) {
-        darkColorScheme(
-            primary = primary,
-            secondary = secondary,
-            background = background,
-            surface = background
-        )
-    } else {
-        lightColorScheme(
-            primary = primary,
-            secondary = secondary,
-            background = background,
-            surface = background
-        )
+    val colorScheme = when {
+        // Use Material You dynamic colors if Android 12+ and no custom colors set
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !hasCustomColors -> {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }
+        // Use custom or default static colors
+        else -> {
+            val primary = primaryColorHex?.let { parseColor(it, defaultPrimary) } ?: defaultPrimary
+            val secondary = secondaryColorHex?.let { parseColor(it, defaultSecondary) } ?: defaultSecondary
+            val background = backgroundColorHex?.let { parseColor(it, defaultBackground) } ?: defaultBackground
+
+            if (darkTheme) {
+                darkColorScheme(
+                    primary = primary,
+                    secondary = secondary,
+                    background = background,
+                    surface = background
+                )
+            } else {
+                lightColorScheme(
+                    primary = primary,
+                    secondary = secondary,
+                    background = background,
+                    surface = background
+                )
+            }
+        }
     }
 
     val view = LocalView.current
@@ -69,3 +82,4 @@ fun StreamerTheme(
         content = content
     )
 }
+

@@ -25,6 +25,9 @@ import androidx.tv.material3.Icon
 import androidx.tv.material3.Text
 import com.ari.streamer.ui.MainViewModel
 import com.ari.streamer.ui.theme.parseColor
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.*
 
 @Composable
 fun TvSettingsScreen(
@@ -36,8 +39,10 @@ fun TvSettingsScreen(
     val useLargerBuffer by viewModel.useLargerBuffer.collectAsState()
     val updateStatus by viewModel.updateStatus.collectAsState()
 
-    var m3uUrl by remember { mutableStateOf("https://pastebin.com/raw/i4YM5tAL") }
+    val savedM3uUrl by viewModel.m3uUrl.collectAsState()
+    var m3uUrl by remember(savedM3uUrl) { mutableStateOf(savedM3uUrl) }
     val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
 
     // Aesthetic TV-optimized dark presets
     val presetColors = listOf(
@@ -290,11 +295,30 @@ fun TvSettingsScreen(
                             focusedContainerColor = Color.White.copy(alpha = 0.15f),
                             unfocusedContainerColor = Color.White.copy(alpha = 0.05f)
                         ),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onPreviewKeyEvent { keyEvent ->
+                                if (keyEvent.type == KeyEventType.KeyDown) {
+                                    when (keyEvent.key) {
+                                        Key.DirectionDown -> {
+                                            focusManager.moveFocus(FocusDirection.Down)
+                                            true
+                                        }
+                                        Key.DirectionUp -> {
+                                            focusManager.moveFocus(FocusDirection.Up)
+                                            true
+                                        }
+                                        else -> false
+                                    }
+                                } else false
+                            }
                     )
                     
                     Card(
-                        onClick = { viewModel.updateFromRemoteM3u(m3uUrl) },
+                        onClick = {
+                            viewModel.setM3uUrl(m3uUrl)
+                            viewModel.updateFromRemoteM3u(m3uUrl)
+                        },
                         modifier = Modifier.fillMaxWidth().height(68.dp),
                         scale = CardDefaults.scale(focusedScale = 1.02f),
                         colors = cardColors,
