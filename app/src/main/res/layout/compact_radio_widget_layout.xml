@@ -37,7 +37,8 @@
                 android:layout_width="38dp"
                 android:layout_height="38dp"
                 android:layout_marginEnd="10dp"
-                android:scaleType="centerCrop"
+                android:scaleType="fitCenter"
+                android:background="@drawable/widget_logo_bg"
                 android:src="@drawable/ic_launcher" />
 
             <!-- Title & Info Stack -->

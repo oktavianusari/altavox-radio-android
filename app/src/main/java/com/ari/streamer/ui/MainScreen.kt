@@ -981,15 +981,17 @@ fun StationItem(
         AsyncImage(
             model = ImageRequest.Builder(LocalContext.current)
                 .data(station.logoUrl)
+                .size(128) // Ultra-light memory footprint
                 .crossfade(true)
                 .error(R.drawable.ic_launcher)
                 .fallback(R.drawable.ic_launcher)
                 .build(),
             contentDescription = null,
+            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .background(androidx.compose.ui.graphics.Color.White) // Ensure transparent logos have white background
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -1055,15 +1057,17 @@ fun NowPlayingBar(
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(station.logoUrl)
+                    .size(128) // Ultra-light memory footprint
                     .crossfade(true)
                     .error(R.drawable.ic_launcher)
                     .fallback(R.drawable.ic_launcher)
                     .build(),
                 contentDescription = null,
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier
                     .size(56.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(androidx.compose.ui.graphics.Color.White) // White background for transparent logos
                     .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
             )
             Spacer(modifier = Modifier.width(16.dp))

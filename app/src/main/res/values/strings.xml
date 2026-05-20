@@ -45,7 +45,16 @@
     
     <!-- Help Content Strings -->
     <string name="help_intro_title">AltaVox Radio - Help &amp; Features</string>
-    <string name="help_intro_body">Welcome to AltaVox Radio! Below is a detailed explanation of the features available in this application.</string>
+    <string name="help_intro_body">AltaVox Radio is a modern streaming application designed for seamless listening.
+
+<b>Features:</b>
+• <b>Dynamic Theme:</b> The app colors automatically adapt to your phone\'s wallpaper (Android 12+).
+• <b>Fast Alphabet Scroll:</b> Drag your finger along the right edge of the radio list to quickly jump to any letter.
+• <b>Widgets:</b> Add interactive widgets to your home screen for quick playback control.
+• <b>Manage Radios:</b> Long press on any station to edit or delete it. Add new streams manually via the + button.
+
+<b>Support:</b>
+For issues or suggestions, please contact our support team.</string>
     
     <string name="help_streaming_title">1. Radio Streaming &amp; Custom Playlists</string>
     <string name="help_streaming_body">The app streams standard live feeds seamlessly. You can customize the source list using remote M3U URL playlists. These are synced, saved, and categorized directly within the app.</string>
@@ -140,4 +149,11 @@
     <string name="add_manual_radio_title">Add Radio Manually</string>
     <string name="name_cannot_be_blank">Radio name cannot be blank</string>
     <string name="radio_added_successfully">Radio added successfully</string>
+    <string name="name_placeholder">e.g. Sonora FM</string>
+    <string name="url_placeholder">e.g. http://...</string>
+    <string name="logo_placeholder">e.g. https://.../logo.png</string>
+    <string name="name_supporting_text">Fill in with radio name</string>
+    <string name="url_supporting_text">Streaming radio address</string>
+    <string name="logo_supporting_text">Radio icon. The linked image will be automatically scaled down to save memory.</string>
+    <string name="category_supporting_text">Target category in the app</string>
 </resources>

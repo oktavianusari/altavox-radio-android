@@ -211,10 +211,11 @@ class CompactRadioWidgetProvider : AppWidgetProvider() {
                 try {
                     val request = ImageRequest.Builder(context)
                         .data(logoUrl)
+                        .size(128) // Ultra-light memory footprint for widget
                         .allowHardware(false) // Software bitmaps only for canvas drawing!
                         .build()
                     val raw = context.imageLoader.execute(request).drawable?.toBitmap()
-                    raw?.let { getRoundedCornerBitmap(it, (8 * density).toInt()) }
+                    raw?.let { getRoundedCornerBitmap(it, (12 * density).toInt()) }
                 } catch (e: Throwable) {
                     null
                 }
@@ -264,7 +265,6 @@ class CompactRadioWidgetProvider : AppWidgetProvider() {
     private fun getRoundedCornerBitmap(bitmap: Bitmap, pixels: Int): Bitmap {
         val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(output)
-        val color = 0xff424242.toInt()
         val paint = android.graphics.Paint()
         val rect = android.graphics.Rect(0, 0, bitmap.width, bitmap.height)
         val rectF = android.graphics.RectF(rect)
@@ -272,10 +272,10 @@ class CompactRadioWidgetProvider : AppWidgetProvider() {
 
         paint.isAntiAlias = true
         canvas.drawARGB(0, 0, 0, 0)
-        paint.color = color
+        paint.color = android.graphics.Color.WHITE
         canvas.drawRoundRect(rectF, roundPx, roundPx, paint)
 
-        paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_IN)
+        paint.xfermode = android.graphics.PorterDuffXfermode(android.graphics.PorterDuff.Mode.SRC_ATOP)
         canvas.drawBitmap(bitmap, rect, rect, paint)
         return output
     }

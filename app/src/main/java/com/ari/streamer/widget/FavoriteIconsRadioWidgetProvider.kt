@@ -20,14 +20,13 @@ import com.ari.streamer.MainActivity
 import com.ari.streamer.R
 import com.ari.streamer.data.AppDatabase
 import com.ari.streamer.data.Station
+import com.ari.streamer.data.UserPreferences
 import com.ari.streamer.service.RadioPlaybackService
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import java.util.concurrent.TimeUnit
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
-class RadioWidgetProvider : AppWidgetProvider() {
+class FavoriteIconsRadioWidgetProvider : AppWidgetProvider() {
 
     companion object {
         const val ACTION_UPDATE_STATE = "com.ari.streamer.widget.ACTION_UPDATE_STATE"
@@ -49,74 +48,71 @@ class RadioWidgetProvider : AppWidgetProvider() {
         val pendingResult = goAsync()
         val appContext = context.applicationContext
         coroutineScope.launch {
+            val sessionToken = SessionToken(appContext, ComponentName(appContext, RadioPlaybackService::class.java))
+            val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
+            
+            var isPlaying = false
+            var title = "No Active Station"
+            var logoUrl: String? = null
+            var formatBitrate = "MP3 • 128 kbps"
+            
             try {
-                // Fetch the current playing state if the service is running
-                val sessionToken = SessionToken(appContext, ComponentName(appContext, RadioPlaybackService::class.java))
-                val controllerFuture = MediaController.Builder(appContext, sessionToken).buildAsync()
-                
-                var isPlaying = false
-                var title = "No Active Station"
-                var logoUrl: String? = null
-                var formatBitrate = "MP3 • 128 kbps"
-                
-                try {
-                    val controller = withContext(Dispatchers.IO) {
-                        try {
-                            controllerFuture.get(1, TimeUnit.SECONDS)
-                        } catch (e: Exception) {
-                            null
-                        }
+                val controller = withContext(Dispatchers.IO) {
+                    try {
+                        controllerFuture.get(1, TimeUnit.SECONDS)
+                    } catch (e: Exception) {
+                        null
                     }
-                    if (controller != null) {
-                        isPlaying = controller.isPlaying
-                        val mediaMetadata = controller.currentMediaItem?.mediaMetadata
-                        title = mediaMetadata?.title?.toString() ?: mediaMetadata?.displayTitle?.toString() ?: "AltaVox Radio"
-                        logoUrl = mediaMetadata?.artworkUri?.toString()
-                        
-                        var audioFormat: androidx.media3.common.Format? = null
-                        val currentTracks = controller.currentTracks
-                        for (group in currentTracks.groups) {
-                            if (group.type == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
-                                for (i in 0 until group.length) {
-                                    if (group.isTrackSelected(i)) {
-                                        audioFormat = group.getTrackFormat(i)
-                                        break
-                                    }
+                }
+                if (controller != null) {
+                    isPlaying = controller.isPlaying
+                    val mediaMetadata = controller.currentMediaItem?.mediaMetadata
+                    title = mediaMetadata?.title?.toString() ?: mediaMetadata?.displayTitle?.toString() ?: "AltaVox Radio"
+                    logoUrl = mediaMetadata?.artworkUri?.toString()
+                    
+                    var audioFormat: androidx.media3.common.Format? = null
+                    val currentTracks = controller.currentTracks
+                    for (group in currentTracks.groups) {
+                        if (group.type == androidx.media3.common.C.TRACK_TYPE_AUDIO) {
+                            for (i in 0 until group.length) {
+                                if (group.isTrackSelected(i)) {
+                                    audioFormat = group.getTrackFormat(i)
+                                    break
                                 }
                             }
-                            if (audioFormat != null) break
                         }
-                        
-                        val mimeType = audioFormat?.sampleMimeType
-                        val bitrate = audioFormat?.bitrate ?: -1
-                        val formatName = when {
-                            mimeType?.contains("mpeg", ignoreCase = true) == true -> "MP3"
-                            mimeType?.contains("mp4", ignoreCase = true) == true || mimeType?.contains("aac", ignoreCase = true) == true -> "AAC"
-                            else -> "MP3"
-                        }
-                        val bitrateKbps = if (bitrate > 0) "${bitrate / 1000} kbps" else "128 kbps"
-                        formatBitrate = "$formatName • $bitrateKbps"
-                    } else {
-                        // Fallback: show the first station in the database if nothing is active
-                        val db = AppDatabase.getDatabase(context)
-                        val stations = db.stationDao().getAllStations().first()
-                        if (stations.isNotEmpty()) {
-                            title = stations.first().name
-                            logoUrl = stations.first().logoUrl
-                        }
+                        if (audioFormat != null) break
                     }
-                } catch (e: Exception) {
-                    // Fallback to database
+                    
+                    val mimeType = audioFormat?.sampleMimeType
+                    val bitrate = audioFormat?.bitrate ?: -1
+                    val formatName = when {
+                        mimeType?.contains("mpeg", ignoreCase = true) == true -> "MP3"
+                        mimeType?.contains("mp4", ignoreCase = true) == true || mimeType?.contains("aac", ignoreCase = true) == true -> "AAC"
+                        else -> "MP3"
+                    }
+                    val bitrateKbps = if (bitrate > 0) "${bitrate / 1000} kbps" else "128 kbps"
+                    formatBitrate = "$formatName • $bitrateKbps"
+                } else {
                     val db = AppDatabase.getDatabase(context)
                     val stations = db.stationDao().getAllStations().first()
                     if (stations.isNotEmpty()) {
                         title = stations.first().name
                         logoUrl = stations.first().logoUrl
                     }
-                } finally {
-                    MediaController.releaseFuture(controllerFuture)
                 }
+            } catch (e: Exception) {
+                val db = AppDatabase.getDatabase(context)
+                val stations = db.stationDao().getAllStations().first()
+                if (stations.isNotEmpty()) {
+                    title = stations.first().name
+                    logoUrl = stations.first().logoUrl
+                }
+            } finally {
+                MediaController.releaseFuture(controllerFuture)
+            }
 
+            try {
                 for (appWidgetId in appWidgetIds) {
                     updateWidgetUi(context, appWidgetManager, appWidgetId, title, isPlaying, logoUrl, formatBitrate)
                 }
@@ -137,7 +133,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
             val formatBitrate = intent.getStringExtra(EXTRA_FORMAT_BITRATE) ?: "MP3 • 128 kbps"
 
             val appWidgetManager = AppWidgetManager.getInstance(context)
-            val component = ComponentName(context, RadioWidgetProvider::class.java)
+            val component = ComponentName(context, FavoriteIconsRadioWidgetProvider::class.java)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(component)
 
             coroutineScope.launch {
@@ -187,11 +183,11 @@ class RadioWidgetProvider : AppWidgetProvider() {
         logoUrl: String?,
         formatBitrate: String
     ) {
-        val views = RemoteViews(context.packageName, R.layout.radio_widget_layout)
+        val views = RemoteViews(context.packageName, R.layout.favorite_icons_radio_widget_layout)
         
-        // Dynamically style background shape overlay based on user preferences
+        // Dynamically style background shape overlay based on user preferences for Widget 1
         try {
-            val userPrefs = com.ari.streamer.data.UserPreferences(context)
+            val userPrefs = UserPreferences(context)
             val bgColorHex = userPrefs.widget1BgColorFlow.first()
             val opacity = userPrefs.widget1OpacityFlow.first()
             val color = android.graphics.Color.parseColor(bgColorHex)
@@ -202,7 +198,6 @@ class RadioWidgetProvider : AppWidgetProvider() {
             views.setInt(R.id.widget_bg_shape, "setImageAlpha", (0.9f * 255).toInt())
         }
 
-        // Handle "No Active Station" name fallback
         val displayTitle = if (title == "No Active Station") "AltaVox Radio" else title
         val displayFormat = if (title == "No Active Station") "Live Streaming" else formatBitrate
 
@@ -213,7 +208,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
         val playPauseIcon = if (isPlaying) R.drawable.ic_widget_pause else R.drawable.ic_widget_play
         views.setImageViewResource(R.id.widget_btn_play_pause, playPauseIcon)
 
-        // Asynchronously load the active logo bitmap with beautiful rounded corners natively
+        // Asynchronously load the active logo bitmap
         val density = context.resources.displayMetrics.density
         val bitmap = if (!logoUrl.isNullOrEmpty()) {
             withContext(Dispatchers.IO) {
@@ -221,7 +216,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
                     val request = ImageRequest.Builder(context)
                         .data(logoUrl)
                         .size(128)
-                        .allowHardware(false) // Software bitmaps only for canvas drawing!
+                        .allowHardware(false)
                         .build()
                     val raw = context.imageLoader.execute(request).drawable?.toBitmap()
                     raw?.let { getRoundedCornerBitmap(it, (12 * density).toInt()) }
@@ -232,137 +227,110 @@ class RadioWidgetProvider : AppWidgetProvider() {
         } else null
 
         if (bitmap != null) {
-            views.setImageViewBitmap(R.id.widget_background, bitmap)
+            views.setImageViewBitmap(R.id.widget_logo, bitmap)
         } else {
-            views.setImageViewResource(R.id.widget_background, R.drawable.ic_launcher)
+            views.setImageViewResource(R.id.widget_logo, R.drawable.ic_launcher)
         }
 
-        // BIND CONTROL PENDING INTENTS (Secure Broadcast Receiver calls)
+        // BIND CONTROL PENDING INTENTS
         val pendingIntentFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         } else {
             PendingIntent.FLAG_UPDATE_CURRENT
         }
 
-        val playPauseIntent = Intent(context, RadioWidgetProvider::class.java).apply {
+        val playPauseIntent = Intent(context, FavoriteIconsRadioWidgetProvider::class.java).apply {
             action = ACTION_PLAY_PAUSE
         }
-        val playPausePendingIntent = PendingIntent.getBroadcast(context, 1, playPauseIntent, pendingIntentFlags)
+        val playPausePendingIntent = PendingIntent.getBroadcast(context, 31, playPauseIntent, pendingIntentFlags)
         views.setOnClickPendingIntent(R.id.widget_btn_play_pause, playPausePendingIntent)
 
-        val nextIntent = Intent(context, RadioWidgetProvider::class.java).apply {
+        val nextIntent = Intent(context, FavoriteIconsRadioWidgetProvider::class.java).apply {
             action = ACTION_NEXT
         }
-        val nextPendingIntent = PendingIntent.getBroadcast(context, 2, nextIntent, pendingIntentFlags)
+        val nextPendingIntent = PendingIntent.getBroadcast(context, 32, nextIntent, pendingIntentFlags)
         views.setOnClickPendingIntent(R.id.widget_btn_next, nextPendingIntent)
 
-        val prevIntent = Intent(context, RadioWidgetProvider::class.java).apply {
+        val prevIntent = Intent(context, FavoriteIconsRadioWidgetProvider::class.java).apply {
             action = ACTION_PREVIOUS
         }
-        val prevPendingIntent = PendingIntent.getBroadcast(context, 3, prevIntent, pendingIntentFlags)
+        val prevPendingIntent = PendingIntent.getBroadcast(context, 33, prevIntent, pendingIntentFlags)
         views.setOnClickPendingIntent(R.id.widget_btn_prev, prevPendingIntent)
 
-        // Separate launch app click targets from controls container to avoid interception
+        // Separate launch app click targets
         val appIntent = Intent(context, MainActivity::class.java)
-        val appPendingIntent = PendingIntent.getActivity(context, 4, appIntent, pendingIntentFlags)
-        views.setOnClickPendingIntent(R.id.widget_background, appPendingIntent)
+        val appPendingIntent = PendingIntent.getActivity(context, 34, appIntent, pendingIntentFlags)
+        views.setOnClickPendingIntent(R.id.widget_bg_shape, appPendingIntent)
         views.setOnClickPendingIntent(R.id.widget_meta_container, appPendingIntent)
 
-        // BIND FAVOURITES QUICK PLAY LIST (Top 2 Favourites)
-        val db = AppDatabase.getDatabase(context)
-        val categories = withContext(Dispatchers.IO) { db.stationDao().getAllCategories().first() }
-        val favCategory = categories.find { it.name.equals("Favourites", ignoreCase = true) }
-        
-        val favStations = if (favCategory != null) {
-            withContext(Dispatchers.IO) { db.stationDao().getStationsByCategory(favCategory.id).first().take(2) }
-        } else emptyList()
-
-        val displayFavs = if (favStations.isNotEmpty()) favStations else {
-            val allStations = withContext(Dispatchers.IO) { db.stationDao().getAllStations().first() }
-            allStations.take(2)
-        }
-
-        if (displayFavs.isEmpty()) {
-            views.setViewVisibility(R.id.widget_bottom_card, View.GONE)
-        } else {
-            views.setViewVisibility(R.id.widget_bottom_card, View.VISIBLE)
-
-            // Setup Item 1
-            if (displayFavs.size >= 1) {
-                val station = displayFavs[0]
-                views.setViewVisibility(R.id.widget_fav_item_1, View.VISIBLE)
-                views.setTextViewText(R.id.widget_fav_1_name, station.name)
-                
-                val favLogo1 = station.logoUrl
-                val favBitmap1 = if (!favLogo1.isNullOrEmpty()) {
-                    withContext(Dispatchers.IO) {
-                        try {
-                            val request = ImageRequest.Builder(context)
-                                .data(favLogo1)
-                                .size(128)
-                                .allowHardware(false)
-                                .build()
-                            val raw = context.imageLoader.execute(request).drawable?.toBitmap()
-                            raw?.let { getRoundedCornerBitmap(it, (12 * density).toInt()) }
-                        } catch (e: Throwable) {
-                            null
-                        }
-                    }
-                } else null
-                
-                if (favBitmap1 != null) {
-                    views.setImageViewBitmap(R.id.widget_fav_1_logo, favBitmap1)
-                } else {
-                    views.setImageViewResource(R.id.widget_fav_1_logo, R.drawable.ic_launcher)
-                }
-
-                val favPlayIntent1 = Intent(context, RadioWidgetProvider::class.java).apply {
-                    action = ACTION_PLAY_STATION
-                    putExtra(EXTRA_STATION_ID, station.id)
-                }
-                val favPlayPending1 = PendingIntent.getBroadcast(context, 10, favPlayIntent1, pendingIntentFlags)
-                views.setOnClickPendingIntent(R.id.widget_fav_item_1, favPlayPending1)
+        // LOAD FAVORITES DYNAMICALLY
+        try {
+            val db = AppDatabase.getDatabase(context)
+            val categories = db.stationDao().getAllCategories().first()
+            val stations = db.stationDao().getAllStations().first()
+            
+            val favCategory = categories.find { it.name.equals("Favourites", ignoreCase = true) || it.name.equals("Favorites", ignoreCase = true) }
+            val favoriteStations = if (favCategory != null) {
+                stations.filter { it.categoryId == favCategory.id }.take(5)
             } else {
-                views.setViewVisibility(R.id.widget_fav_item_1, View.GONE)
+                stations.take(5) // fallback to first 5 if no favorites category yet
             }
 
-            // Setup Item 2
-            if (displayFavs.size >= 2) {
-                val station = displayFavs[1]
-                views.setViewVisibility(R.id.widget_fav_item_2, View.VISIBLE)
-                views.setTextViewText(R.id.widget_fav_2_name, station.name)
-                
-                val favLogo2 = station.logoUrl
-                val favBitmap2 = if (!favLogo2.isNullOrEmpty()) {
-                    withContext(Dispatchers.IO) {
-                        try {
-                            val request = ImageRequest.Builder(context)
-                                .data(favLogo2)
-                                .allowHardware(false)
-                                .build()
-                            val raw = context.imageLoader.execute(request).drawable?.toBitmap()
-                            raw?.let { getRoundedCornerBitmap(it, (12 * density).toInt()) }
-                        } catch (e: Throwable) {
-                            null
-                        }
-                    }
-                } else null
-                
-                if (favBitmap2 != null) {
-                    views.setImageViewBitmap(R.id.widget_fav_2_logo, favBitmap2)
-                } else {
-                    views.setImageViewResource(R.id.widget_fav_2_logo, R.drawable.ic_launcher)
-                }
+            val favViewIds = arrayOf(
+                R.id.widget_fav_1,
+                R.id.widget_fav_2,
+                R.id.widget_fav_3,
+                R.id.widget_fav_4,
+                R.id.widget_fav_5
+            )
 
-                val favPlayIntent2 = Intent(context, RadioWidgetProvider::class.java).apply {
-                    action = ACTION_PLAY_STATION
-                    putExtra(EXTRA_STATION_ID, station.id)
+            for (i in 0 until 5) {
+                val favId = favViewIds[i]
+                if (i < favoriteStations.size) {
+                    val station = favoriteStations[i]
+                    views.setViewVisibility(favId, View.VISIBLE)
+
+                    val favBitmap = if (!station.logoUrl.isNullOrEmpty()) {
+                        withContext(Dispatchers.IO) {
+                            try {
+                                val request = ImageRequest.Builder(context)
+                                    .data(station.logoUrl)
+                                    .size(128)
+                                    .allowHardware(false)
+                                    .build()
+                                val raw = context.imageLoader.execute(request).drawable?.toBitmap()
+                                raw?.let { getRoundedCornerBitmap(it, (12 * density).toInt()) } // fully circular rounded corners for icons (36dp / 2 = 18dp)
+                            } catch (e: Throwable) {
+                                null
+                            }
+                        }
+                    } else null
+
+                    if (favBitmap != null) {
+                        views.setImageViewBitmap(favId, favBitmap)
+                    } else {
+                        views.setImageViewResource(favId, R.drawable.ic_launcher)
+                    }
+
+                    // Play this station click action
+                    val playStationIntent = Intent(context, FavoriteIconsRadioWidgetProvider::class.java).apply {
+                        action = ACTION_PLAY_STATION
+                        putExtra(EXTRA_STATION_ID, station.id)
+                        data = Uri.parse("altavox://play_station/${station.id}")
+                    }
+                    val playStationPendingIntent = PendingIntent.getBroadcast(
+                        context, 
+                        100 + i, 
+                        playStationIntent, 
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE else PendingIntent.FLAG_UPDATE_CURRENT
+                    )
+                    views.setOnClickPendingIntent(favId, playStationPendingIntent)
+                } else {
+                    views.setViewVisibility(favId, View.GONE)
                 }
-                val favPlayPending2 = PendingIntent.getBroadcast(context, 11, favPlayIntent2, pendingIntentFlags)
-                views.setOnClickPendingIntent(R.id.widget_fav_item_2, favPlayPending2)
-            } else {
-                views.setViewVisibility(R.id.widget_fav_item_2, View.GONE)
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -388,7 +356,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
 
     private suspend fun handleWidgetAction(context: Context, controller: MediaController, action: String, intent: Intent) {
         val db = AppDatabase.getDatabase(context)
-        val userPrefs = com.ari.streamer.data.UserPreferences(context)
+        val userPrefs = UserPreferences(context)
 
         when (action) {
             ACTION_PLAY_PAUSE -> {
@@ -446,7 +414,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private suspend fun playStationOnController(controller: MediaController, station: Station, userPrefs: com.ari.streamer.data.UserPreferences) {
+    private suspend fun playStationOnController(controller: MediaController, station: Station, userPrefs: UserPreferences) {
         val mediaMetadata = androidx.media3.common.MediaMetadata.Builder()
             .setTitle(station.name)
             .setArtworkUri(station.logoUrl?.let { Uri.parse(it) })

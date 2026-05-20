@@ -45,10 +45,16 @@
     
     <!-- Help Content Strings -->
     <string name="help_intro_title">AltaVox Radio - Bantuan &amp; Fitur</string>
-    <string name="help_intro_body">Selamat datang di AltaVox Radio! Berikut penjelasan lengkap mengenai fitur-fitur yang tersedia dalam aplikasi ini.</string>
-    
-    <string name="help_streaming_title">1. Pemutaran Radio &amp; Playlist Kustom</string>
-    <string name="help_streaming_body">Aplikasi ini memutar siaran langsung secara mulus. Anda dapat menyesuaikan daftar stasiun menggunakan playlist URL M3U eksternal. Daftar stasiun akan disinkronkan, disimpan, dan dikelompokkan berdasarkan kategori langsung di aplikasi.</string>
+    <string name="help_intro_body">AltaVox Radio adalah aplikasi streaming modern yang dirancang untuk mendengarkan dengan lancar.
+
+<b>Fitur:</b>
+• <b>Tema Dinamis:</b> Warna aplikasi otomatis menyesuaikan dengan wallpaper ponsel Anda (Android 12+).
+• <b>Gulir Cepat Alfabet:</b> Geser jari Anda di sepanjang tepi kanan daftar radio untuk melompat cepat ke huruf apa pun.
+• <b>Widget:</b> Tambahkan widget interaktif ke layar utama untuk kontrol pemutaran cepat.
+• <b>Kelola Radio:</b> Tekan lama pada stasiun mana pun untuk mengubah atau menghapusnya. Tambah siaran baru secara manual lewat tombol +.
+
+<b>Dukungan:</b>
+Untuk kendala atau saran, silakan hubungi tim dukungan kami.</string>
     
     <string name="help_widgets_title">2. Widget Layar Utama</string>
     <string name="help_widgets_body">AltaVox Radio menyediakan 2 pilihan widget:\n• Big Widget: Menampilkan logo stasiun radio yang sedang diputar, rincian format, tombol kontrol previous/next, serta tombol pintasan putar cepat untuk 2 stasiun terfavorit Anda.\n• Small Widget: Bilah horizontal ramping dengan tombol navigasi utama `[Prev] [Play/Pause] [Next]` yang dirancang untuk menghemat ruang.</string>
@@ -140,4 +146,11 @@
     <string name="add_manual_radio_title">Tambah Radio Manual</string>
     <string name="name_cannot_be_blank">Nama radio tidak boleh kosong</string>
     <string name="radio_added_successfully">Berhasil menambahkan radio</string>
+    <string name="name_placeholder">misal: Sonora FM</string>
+    <string name="url_placeholder">misal: http://...</string>
+    <string name="logo_placeholder">misal: https://.../logo.png</string>
+    <string name="name_supporting_text">Isi dengan nama radio</string>
+    <string name="url_supporting_text">Alamat streaming radio</string>
+    <string name="logo_supporting_text">Ikon radio. Gambar dari tautan akan otomatis diperkecil agar tidak memberatkan memori HP.</string>
+    <string name="category_supporting_text">Kategori pada aplikasi</string>
 </resources>
