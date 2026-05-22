@@ -174,7 +174,16 @@ fun AddManualRadioScreen(
                                         categoryExpanded = false
                                     }
                                 )
-                                categories.filter { !it.name.equals("Uncategorized", ignoreCase = true) && !it.name.equals("Favourites", ignoreCase = true) && !it.name.equals("Favorites", ignoreCase = true) }.forEach { category ->
+                                val sortedDialogCategories = categories.filter { !it.name.equals("Uncategorized", ignoreCase = true) }.sortedWith { c1, c2 ->
+                                    val isFav1 = c1.name.equals("Favourites", ignoreCase = true) || c1.name.equals("Favorites", ignoreCase = true)
+                                    val isFav2 = c2.name.equals("Favourites", ignoreCase = true) || c2.name.equals("Favorites", ignoreCase = true)
+                                    when {
+                                        isFav1 && !isFav2 -> -1
+                                        !isFav1 && isFav2 -> 1
+                                        else -> c1.name.compareTo(c2.name, ignoreCase = true)
+                                    }
+                                }
+                                sortedDialogCategories.forEach { category ->
                                     DropdownMenuItem(
                                         text = { Text(category.name) },
                                         onClick = {

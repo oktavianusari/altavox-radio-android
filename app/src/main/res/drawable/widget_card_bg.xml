@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="#E6151517" /> <!-- 90% premium dark charcoal -->
+    <solid android:color="@color/widget_background" /> <!-- Theme-aware background -->
     <corners android:radius="24dp" />
-    <stroke android:width="1dp" android:color="#26FFFFFF" /> <!-- Elegant glass border -->
+    <stroke android:width="1dp" android:color="@color/widget_stroke" /> <!-- Theme-aware border -->
 </shape>

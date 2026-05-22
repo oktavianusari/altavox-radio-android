@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -62,6 +63,7 @@ fun MainScreen(
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
 
     var showAddMenu by remember { mutableStateOf(false) }
+    var isSearchExpanded by remember { mutableStateOf(false) }
 
     val filteredStations = remember(searchQuery, stations, categories) {
         val filtered = if (searchQuery.isBlank()) stations
@@ -80,7 +82,16 @@ fun MainScreen(
     val flattenedList = remember(searchQuery, stations, categories, filteredStations) {
         val list = mutableListOf<LazyPlaylistItem>()
         if (searchQuery.isBlank()) {
-            categories.forEach { category ->
+            val sortedCategories = categories.sortedWith { c1, c2 ->
+                val isFav1 = c1.name.equals("Favourites", ignoreCase = true) || c1.name.equals("Favorites", ignoreCase = true)
+                val isFav2 = c2.name.equals("Favourites", ignoreCase = true) || c2.name.equals("Favorites", ignoreCase = true)
+                when {
+                    isFav1 && !isFav2 -> -1
+                    !isFav1 && isFav2 -> 1
+                    else -> c1.name.compareTo(c2.name, ignoreCase = true)
+                }
+            }
+            sortedCategories.forEach { category ->
                 val categoryStations = stations
                     .filter { it.categoryId == category.id || (it.categoryId == null && category.name.equals("Uncategorized", ignoreCase = true)) }
                     .sortedBy { it.name.lowercase() }
@@ -180,13 +191,54 @@ fun MainScreen(
                         }
                     }
                 )
+            } else if (isSearchExpanded) {
+                TopAppBar(
+                    title = {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text(stringResource(R.string.search_placeholder)) },
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
+                                focusedBorderColor = androidx.compose.ui.graphics.Color.Transparent,
+                                unfocusedBorderColor = androidx.compose.ui.graphics.Color.Transparent
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            isSearchExpanded = false
+                            searchQuery = ""
+                        }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
+                        }
+                    },
+                    actions = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Clear")
+                            }
+                        }
+                    }
+                )
             } else {
                 TopAppBar(
-                    title = { Text(stringResource(R.string.app_name)) },
+                    title = {
+                        Text(
+                            text = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+                        )
+                    },
                     actions = {
+                        IconButton(onClick = { isSearchExpanded = true }) {
+                            Icon(Icons.Default.Search, contentDescription = "Search")
+                        }
                         Box {
                             IconButton(onClick = { showAddMenu = true }) {
-                                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_radio))
+                                Icon(Icons.Default.MoreVert, contentDescription = "More")
                             }
                             DropdownMenu(
                                 expanded = showAddMenu,
@@ -206,10 +258,22 @@ fun MainScreen(
                                         onNavigateToAddManual()
                                     }
                                 )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.menu_update_radio_list)) },
+                                    onClick = {
+                                        showAddMenu = false
+                                        m3uUrl = viewModel.m3uUrl.value
+                                        showWarningDialog = true
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.settings)) },
+                                    onClick = {
+                                        showAddMenu = false
+                                        onNavigateToSettings()
+                                    }
+                                )
                             }
-                        }
-                        IconButton(onClick = onNavigateToSettings) {
-                            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings))
                         }
                     }
                 )
@@ -227,7 +291,9 @@ fun MainScreen(
                     onPlayPause = {
                         if (playbackState.isPlaying) viewModel.playbackManager.stop()
                         else viewModel.playbackManager.play()
-                    }
+                    },
+                    onPrevious = { viewModel.playPreviousStation() },
+                    onNext = { viewModel.playNextStation() }
                 )
             }
         }
@@ -471,41 +537,7 @@ fun MainScreen(
                         .fillMaxSize()
                         .padding(padding)
                 ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = { Text(stringResource(R.string.search_placeholder)) },
-                        leadingIcon = { 
-                            Icon(
-                                imageVector = Icons.Default.Search, 
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            ) 
-                        },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Clear, 
-                                        contentDescription = "Clear search",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        },
-                        shape = RoundedCornerShape(28.dp),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.15f),
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                    )
-
+                    // Search field moved to TopAppBar
                     Box(modifier = Modifier.fillMaxSize()) {
                         if (searchQuery.isNotBlank() && filteredStations.isEmpty()) {
                             // Search Empty State
@@ -951,9 +983,19 @@ fun StationItem(
 ) {
     var expanded by remember { mutableStateOf(false) }
     
-    Row(
+    val backgroundColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface
+    val contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = backgroundColor,
+            contentColor = contentColor
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isSelected) 4.dp else 0.dp),
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 4.dp, vertical = 2.dp)
             .combinedClickable(
                 onClick = {
                     if (isSelectionMode) {
@@ -968,36 +1010,40 @@ fun StationItem(
                     }
                 }
             )
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        if (isSelectionMode) {
-            Checkbox(
-                checked = isSelected,
-                onCheckedChange = { onSelectedChange(it) },
-                modifier = Modifier.padding(end = 8.dp)
-            )
-        }
-        AsyncImage(
-            model = ImageRequest.Builder(LocalContext.current)
-                .data(station.logoUrl)
-                .size(128) // Ultra-light memory footprint
-                .crossfade(true)
-                .error(R.drawable.ic_launcher)
-                .fallback(R.drawable.ic_launcher)
-                .build(),
-            contentDescription = null,
-            contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+        Row(
             modifier = Modifier
-                .size(48.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(androidx.compose.ui.graphics.Color.White) // Ensure transparent logos have white background
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
-        )
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(text = station.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-        
-        Box {
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isSelectionMode) {
+                Checkbox(
+                    checked = isSelected,
+                    onCheckedChange = { onSelectedChange(it) },
+                    modifier = Modifier.padding(end = 8.dp)
+                )
+            }
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(station.logoUrl)
+                    .size(128) // Ultra-light memory footprint
+                    .crossfade(true)
+                    .error(R.drawable.ic_launcher)
+                    .fallback(R.drawable.ic_launcher)
+                    .build(),
+                contentDescription = null,
+                contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(androidx.compose.ui.graphics.Color.White) // Ensure transparent logos have white background
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(text = station.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            
+            Box {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
@@ -1031,10 +1077,11 @@ fun StationItem(
                     }
                 )
             }
+            }
         }
     }
 }
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun NowPlayingBar(
     station: Station,
@@ -1042,22 +1089,28 @@ fun NowPlayingBar(
     format: String?,
     bitrate: String?,
     nowPlayingTitle: String?,
-    onPlayPause: () -> Unit
+    onPlayPause: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceVariant,
-        modifier = Modifier.fillMaxWidth()
+        contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+        shadowElevation = 8.dp,
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(station.logoUrl)
-                    .size(128) // Ultra-light memory footprint
+                    .size(128)
                     .crossfade(true)
                     .error(R.drawable.ic_launcher)
                     .fallback(R.drawable.ic_launcher)
@@ -1065,14 +1118,18 @@ fun NowPlayingBar(
                 contentDescription = null,
                 contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(androidx.compose.ui.graphics.Color.White) // White background for transparent logos
-                    .border(1.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(12.dp))
+                    .background(androidx.compose.ui.graphics.Color.White)
             )
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = station.name, style = MaterialTheme.typography.titleMedium, maxLines = 1)
+                Text(
+                    text = station.name, 
+                    style = MaterialTheme.typography.titleMedium, 
+                    maxLines = 1,
+                    modifier = Modifier.basicMarquee(delayMillis = 5000)
+                )
                 
                 val details = mutableListOf<String>()
                 if (nowPlayingTitle?.startsWith("Error:") == true) {
@@ -1085,25 +1142,42 @@ fun NowPlayingBar(
                 if (details.isNotEmpty()) {
                     Text(
                         text = details.joinToString(" • "),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         maxLines = 1
                     )
                 } else {
                     Text(
                         text = "Loading...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
                         maxLines = 1
                     )
                 }
             }
-            IconButton(onClick = onPlayPause) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "Stop" else "Play",
-                    modifier = Modifier.size(32.dp)
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onPrevious) {
+                    Icon(
+                        imageVector = Icons.Default.SkipPrevious,
+                        contentDescription = "Previous",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = onPlayPause) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Default.Stop else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "Stop" else "Play",
+                        modifier = Modifier.size(36.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                IconButton(onClick = onNext) {
+                    Icon(
+                        imageVector = Icons.Default.SkipNext,
+                        contentDescription = "Next",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
@@ -1174,7 +1248,16 @@ fun EditStationDialog(
                                 expanded = false
                             }
                         )
-                        categories.filter { !it.name.equals("Uncategorized", ignoreCase = true) && !it.name.equals("Favourites", ignoreCase = true) && !it.name.equals("Favorites", ignoreCase = true) }.forEach { category ->
+                        val sortedDialogCategories = categories.filter { !it.name.equals("Uncategorized", ignoreCase = true) }.sortedWith { c1, c2 ->
+                            val isFav1 = c1.name.equals("Favourites", ignoreCase = true) || c1.name.equals("Favorites", ignoreCase = true)
+                            val isFav2 = c2.name.equals("Favourites", ignoreCase = true) || c2.name.equals("Favorites", ignoreCase = true)
+                            when {
+                                isFav1 && !isFav2 -> -1
+                                !isFav1 && isFav2 -> 1
+                                else -> c1.name.compareTo(c2.name, ignoreCase = true)
+                            }
+                        }
+                        sortedDialogCategories.forEach { category ->
                             DropdownMenuItem(
                                 text = { Text(category.name) },
                                 onClick = {

@@ -45,32 +45,19 @@
     
     <!-- Help Content Strings -->
     <string name="help_intro_title">AltaVox Radio - Bantuan &amp; Fitur</string>
-    <string name="help_intro_body">AltaVox Radio adalah aplikasi streaming modern yang dirancang untuk mendengarkan dengan lancar.
-
-<b>Fitur:</b>
-• <b>Tema Dinamis:</b> Warna aplikasi otomatis menyesuaikan dengan wallpaper ponsel Anda (Android 12+).
-• <b>Gulir Cepat Alfabet:</b> Geser jari Anda di sepanjang tepi kanan daftar radio untuk melompat cepat ke huruf apa pun.
-• <b>Widget:</b> Tambahkan widget interaktif ke layar utama untuk kontrol pemutaran cepat.
-• <b>Kelola Radio:</b> Tekan lama pada stasiun mana pun untuk mengubah atau menghapusnya. Tambah siaran baru secara manual lewat tombol +.
-
-<b>Dukungan:</b>
-Untuk kendala atau saran, silakan hubungi tim dukungan kami.</string>
-    
-    <string name="help_widgets_title">2. Widget Layar Utama</string>
-    <string name="help_widgets_body">AltaVox Radio menyediakan 2 pilihan widget:\n• Big Widget: Menampilkan logo stasiun radio yang sedang diputar, rincian format, tombol kontrol previous/next, serta tombol pintasan putar cepat untuk 2 stasiun terfavorit Anda.\n• Small Widget: Bilah horizontal ramping dengan tombol navigasi utama `[Prev] [Play/Pause] [Next]` yang dirancang untuk menghemat ruang.</string>
-    
-    <string name="help_widget_styles_title">3. Kustomisasi Widget Dinamis</string>
-    <string name="help_widget_styles_body">Ubah warna latar belakang (tint) dan tingkat transparansi (opacity) untuk setiap tipe widget langsung melalui menu Pengaturan Widget. Perubahan akan langsung diterapkan secara instan pada widget di layar utama Anda.</string>
-    
-    <string name="help_search_title">4. Pencarian Stasiun Gaya Spotify</string>
-    <string name="help_search_body">Gunakan kolom pencarian di bagian atas layar utama. Pencarian secara dinamis memfilter daftar stasiun radio berdasarkan nama stasiun maupun nama kategori untuk pengalaman pencarian yang super cepat dan responsif.</string>
-    
-    <string name="help_localization_title">5. Dukungan Dua Bahasa</string>
-    <string name="help_localization_body">Ubah seluruh tampilan antarmuka aplikasi antara Bahasa Inggris dan Bahasa Indonesia. Perubahan bahasa akan langsung diterapkan secara dinamis di seluruh halaman aplikasi.</string>
-    
-    <string name="help_advanced_title">6. Buffer &amp; Kustomisasi Tema Warna</string>
-    <string name="help_advanced_body">Atur warna aksen tema terang dan gelap sesuai keinginan Anda dengan color picker. Untuk jaringan internet yang lambat, aktifkan fitur Gunakan Buffer Lebih Besar pada Pengaturan Putar untuk meminimalkan jeda (suara terputus).</string>
-    
+    <string name="help_intro_body">Pengalaman radio internet minimalis tanpa iklan Anda. Berikut adalah informasi mengenai berbagai fitur aplikasi ini.</string>
+    <string name="help_playback_title">1. Pemutaran Radio</string>
+    <string name="help_playback_body">Mendukung pemutaran streaming di latar belakang dengan kontrol Now Playing Bar dan Notifikasi yang elegan.</string>
+    <string name="help_management_title">2. Manajemen Daftar Radio</string>
+    <string name="help_management_body">Tambahkan stasiun radio secara manual, hapus massal, atau perbarui daftar secara otomatis dari file M3U online.</string>
+    <string name="help_widgets_title">3. Widget Interaktif</string>
+    <string name="help_widgets_body">Tersedia 3 jenis widget (Compact, Wide, Favourites) untuk mengontrol radio dari layar utama. Warna dan transparansi widget dapat diubah.</string>
+    <string name="help_search_title">4. Pencarian &amp; Filter</string>
+    <string name="help_search_body">Temukan stasiun radio favorit dengan mudah menggunakan kotak pencarian pintar yang memfilter daftar secara instan saat Anda mengetik.</string>
+    <string name="help_theme_title">5. Adaptasi Tema</string>
+    <string name="help_theme_body">Antarmuka beradaptasi secara otomatis dengan mode gelap dan terang sistem Anda, memberikan kenyamanan visual setiap saat.</string>
+    <string name="help_localization_title">6. Dukungan Dua Bahasa</string>
+    <string name="help_localization_body">Pilih Bahasa Inggris atau Bahasa Indonesia, dan aplikasi akan menyesuaikan bahasanya secara otomatis pada semua menu dan dialog.</string>    
     <string name="widget_settings_warning">Catatan: Mengubah warna atau opacity widget mungkin akan menghentikan streaming sementara. Anda dapat memutarnya kembali setelah selesai mengatur.</string>
     <string name="custom_hex_code">Kode Warna Hex Kustom</string>
     <string name="predefined_colors">Pilihan Warna Predefined</string>
@@ -143,6 +130,7 @@ Untuk kendala atau saran, silakan hubungi tim dukungan kami.</string>
     <!-- Dropdown & Add Manual -->
     <string name="menu_search_online">Cari Online</string>
     <string name="menu_add_manually">Tambah Manual</string>
+    <string name="menu_update_radio_list">Perbarui Daftar Radio</string>
     <string name="add_manual_radio_title">Tambah Radio Manual</string>
     <string name="name_cannot_be_blank">Nama radio tidak boleh kosong</string>
     <string name="radio_added_successfully">Berhasil menambahkan radio</string>

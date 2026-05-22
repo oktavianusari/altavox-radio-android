@@ -138,6 +138,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         playbackManager.playStation(station)
     }
 
+    fun playNextStation() {
+        val currentList = stations.value.sortedBy { it.name.lowercase() }
+        if (currentList.isEmpty()) return
+        val currentStation = playbackManager.playbackState.value.currentStation ?: return
+        val currentIndex = currentList.indexOfFirst { it.id == currentStation.id }
+        if (currentIndex != -1) {
+            val nextIndex = if (currentIndex + 1 < currentList.size) currentIndex + 1 else 0
+            playStation(currentList[nextIndex])
+        }
+    }
+
+    fun playPreviousStation() {
+        val currentList = stations.value.sortedBy { it.name.lowercase() }
+        if (currentList.isEmpty()) return
+        val currentStation = playbackManager.playbackState.value.currentStation ?: return
+        val currentIndex = currentList.indexOfFirst { it.id == currentStation.id }
+        if (currentIndex != -1) {
+            val prevIndex = if (currentIndex - 1 >= 0) currentIndex - 1 else currentList.size - 1
+            playStation(currentList[prevIndex])
+        }
+    }
+
     fun addStation(name: String, url: String, logoUrl: String?, categoryId: Long?) {
         viewModelScope.launch {
             val count = stations.value.size

@@ -45,34 +45,19 @@
     
     <!-- Help Content Strings -->
     <string name="help_intro_title">AltaVox Radio - Help &amp; Features</string>
-    <string name="help_intro_body">AltaVox Radio is a modern streaming application designed for seamless listening.
-
-<b>Features:</b>
-• <b>Dynamic Theme:</b> The app colors automatically adapt to your phone\'s wallpaper (Android 12+).
-• <b>Fast Alphabet Scroll:</b> Drag your finger along the right edge of the radio list to quickly jump to any letter.
-• <b>Widgets:</b> Add interactive widgets to your home screen for quick playback control.
-• <b>Manage Radios:</b> Long press on any station to edit or delete it. Add new streams manually via the + button.
-
-<b>Support:</b>
-For issues or suggestions, please contact our support team.</string>
-    
-    <string name="help_streaming_title">1. Radio Streaming &amp; Custom Playlists</string>
-    <string name="help_streaming_body">The app streams standard live feeds seamlessly. You can customize the source list using remote M3U URL playlists. These are synced, saved, and categorized directly within the app.</string>
-    
-    <string name="help_widgets_title">2. Home Screen Widgets</string>
-    <string name="help_widgets_body">AltaVox Radio offers two widget choices:\n• Big Widget: Shows the currently playing radio logo, details, previous/next controls, and dynamic quick-play buttons for your top 2 favorite stations.\n• Small Widget: A sleek, horizontal bar with essential controls `[Prev] [Play/Pause] [Next]`, designed to fit anywhere.</string>
-    
-    <string name="help_widget_styles_title">3. Dynamic Widget Customization</string>
-    <string name="help_widget_styles_body">Modify background tint colors and transparency (opacity) levels for each widget type directly under Widget Settings. Changes apply instantly, letting you personalize your Android launcher aesthetic.</string>
-    
-    <string name="help_search_title">4. Spotify-Style Search</string>
-    <string name="help_search_body">Tap the Search bar at the top of the main screen. Typing filters the station list dynamically across both radio station names and categories, offering a fast, responsive, and seamless search experience.</string>
-    
-    <string name="help_localization_title">5. Multi-Language Support</string>
-    <string name="help_localization_body">Switch the entire application interface between English and Bahasa Indonesia. The change applies dynamically and immediately across the entire workspace.</string>
-    
-    <string name="help_advanced_title">6. Buffering &amp; Custom Theme Styling</string>
-    <string name="help_advanced_body">Customize accent colors for light and dark themes using color pickers. For slow network connections, toggle Use Larger Buffer under Advanced Playback to reduce audio skipping and dropouts.</string>
+    <string name="help_intro_body">Your ultimate, ad-free, minimal internet radio experience. Below is some information about the features of this app.</string>
+    <string name="help_playback_title">1. Radio Playback</string>
+    <string name="help_playback_body">Supports background streaming playback with an elegant Now Playing Bar and Notification controls.</string>
+    <string name="help_management_title">2. Radio List Management</string>
+    <string name="help_management_body">Add stations manually, bulk delete multiple stations, or update your entire list automatically from an online M3U file.</string>
+    <string name="help_widgets_title">3. Interactive Widgets</string>
+    <string name="help_widgets_body">Provides 3 distinct widgets (Compact, Wide, and Favourites) to control your radio from the home screen. Widget color and opacity are fully customizable.</string>
+    <string name="help_search_title">4. Search &amp; Filter</string>
+    <string name="help_search_body">Easily find your favorite radio stations using the smart search box that filters the list instantly as you type.</string>
+    <string name="help_theme_title">5. Theme Adaptation</string>
+    <string name="help_theme_body">The interface automatically adapts to your system\'s dark and light mode, providing a comfortable viewing experience at all times.</string>
+    <string name="help_localization_title">6. Bilingual Support</string>
+    <string name="help_localization_body">Choose between English and Indonesian, and the app will instantly adjust its language across all menus and dialogs.</string>
     
     <string name="widget_settings_warning">Note: Changing widget color or opacity might pause streaming. You can resume playback after you are done adjusting.</string>
     <string name="custom_hex_code">Custom Hex Code</string>
@@ -146,6 +131,7 @@ For issues or suggestions, please contact our support team.</string>
     <!-- Dropdown & Add Manual -->
     <string name="menu_search_online">Search Online</string>
     <string name="menu_add_manually">Add Manually</string>
+    <string name="menu_update_radio_list">Update Radio List</string>
     <string name="add_manual_radio_title">Add Radio Manually</string>
     <string name="name_cannot_be_blank">Radio name cannot be blank</string>
     <string name="radio_added_successfully">Radio added successfully</string>

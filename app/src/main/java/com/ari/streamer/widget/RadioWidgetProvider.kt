@@ -371,12 +371,11 @@ class RadioWidgetProvider : AppWidgetProvider() {
     private fun getRoundedCornerBitmap(bitmap: Bitmap, pixels: Int): Bitmap {
         val output = Bitmap.createBitmap(bitmap.width, bitmap.height, Bitmap.Config.ARGB_8888)
         val canvas = android.graphics.Canvas(output)
-        val paint = android.graphics.Paint()
+        val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG)
         val rect = android.graphics.Rect(0, 0, bitmap.width, bitmap.height)
         val rectF = android.graphics.RectF(rect)
         val roundPx = pixels.toFloat()
 
-        paint.isAntiAlias = true
         canvas.drawARGB(0, 0, 0, 0)
         paint.color = android.graphics.Color.WHITE
         canvas.drawRoundRect(rectF, roundPx, roundPx, paint)

@@ -44,23 +44,22 @@ fun HelpScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = stringResource(R.string.help_intro_title),
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
-            Text(
-                text = stringResource(R.string.help_intro_body),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            HelpSectionCard(
+                title = stringResource(R.string.help_intro_title),
+                body = stringResource(R.string.help_intro_body)
             )
 
             HorizontalDivider()
 
             // Collapsible guides
             HelpSectionCard(
-                title = stringResource(R.string.help_streaming_title),
-                body = stringResource(R.string.help_streaming_body)
+                title = stringResource(R.string.help_playback_title),
+                body = stringResource(R.string.help_playback_body)
+            )
+
+            HelpSectionCard(
+                title = stringResource(R.string.help_management_title),
+                body = stringResource(R.string.help_management_body)
             )
 
             HelpSectionCard(
@@ -69,23 +68,18 @@ fun HelpScreen(
             )
 
             HelpSectionCard(
-                title = stringResource(R.string.help_widget_styles_title),
-                body = stringResource(R.string.help_widget_styles_body)
-            )
-
-            HelpSectionCard(
                 title = stringResource(R.string.help_search_title),
                 body = stringResource(R.string.help_search_body)
             )
 
             HelpSectionCard(
-                title = stringResource(R.string.help_localization_title),
-                body = stringResource(R.string.help_localization_body)
+                title = stringResource(R.string.help_theme_title),
+                body = stringResource(R.string.help_theme_body)
             )
 
             HelpSectionCard(
-                title = stringResource(R.string.help_advanced_title),
-                body = stringResource(R.string.help_advanced_body)
+                title = stringResource(R.string.help_localization_title),
+                body = stringResource(R.string.help_localization_body)
             )
 
             Spacer(modifier = Modifier.height(24.dp))
