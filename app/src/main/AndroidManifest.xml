@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
 
     <!-- Android TV features -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -21,6 +23,10 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Streamer"
         tools:targetApi="31">
+        
+        <meta-data
+            android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME"
+            android:value="com.ari.streamer.playback.CastOptionsProvider" />
         
         <activity
             android:name=".MainActivity"
@@ -51,6 +57,8 @@
                 <action android:name="androidx.media3.session.MediaSessionService" />
             </intent-filter>
         </service>
+
+        <receiver android:name=".playback.AlarmReceiver" android:exported="false" />
 
         <receiver
             android:name=".widget.RadioWidgetProvider"

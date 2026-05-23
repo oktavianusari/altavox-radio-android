@@ -37,6 +37,9 @@ import okhttp3.OkHttpClient
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.TimeUnit
+import androidx.media3.cast.CastPlayer
+import androidx.media3.cast.SessionAvailabilityListener
+import com.google.android.gms.cast.framework.CastContext
 
 @UnstableApi
 class RadioPlaybackService : MediaSessionService() {
@@ -47,10 +50,15 @@ class RadioPlaybackService : MediaSessionService() {
         const val ACTION_PREVIOUS = "com.ari.streamer.service.ACTION_PREVIOUS"
         const val ACTION_PLAY_STATION = "com.ari.streamer.service.ACTION_PLAY_STATION"
         const val EXTRA_STATION_ID = "extra_station_id"
+        const val EXTRA_IS_ALARM = "extra_is_alarm"
     }
+
+    private var isCurrentlyPlayingAlarm = false
+    private var fallbackRingtone: android.media.Ringtone? = null
 
     private var mediaSession: MediaSession? = null
     private var player: ExoPlayer? = null
+    private var castPlayer: CastPlayer? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
     // Robust cookie jar that handles domain/path matching correctly
@@ -127,9 +135,18 @@ class RadioPlaybackService : MediaSessionService() {
             .setLoadControl(loadControl)
             .setAudioAttributes(audioAttributes, true)
             .setHandleAudioBecomingNoisy(true)
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
 
         player!!.addListener(object : androidx.media3.common.Player.Listener {
+            override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                super.onPlayerError(error)
+                broadcastWidgetState()
+                
+                if (isCurrentlyPlayingAlarm) {
+                    playFallbackRingtone()
+                }
+            }
             override fun onEvents(player: androidx.media3.common.Player, events: androidx.media3.common.Player.Events) {
                 if (events.containsAny(
                         androidx.media3.common.Player.EVENT_IS_PLAYING_CHANGED,
@@ -156,17 +173,73 @@ class RadioPlaybackService : MediaSessionService() {
             .setCallback(CustomMediaSessionCallback())
             .setBitmapLoader(CoilBitmapLoader())
             .build()
+
+        try {
+            val castContext = CastContext.getSharedInstance(this)
+            castPlayer = CastPlayer(castContext)
+            castPlayer?.setSessionAvailabilityListener(object : SessionAvailabilityListener {
+                override fun onCastSessionAvailable() {
+                    val currentMediaItem = player?.currentMediaItem
+                    val playWhenReady = player?.playWhenReady ?: false
+                    player?.stop()
+                    
+                    mediaSession?.player = castPlayer!!
+                    if (currentMediaItem != null) {
+                        castPlayer?.setMediaItem(currentMediaItem)
+                        castPlayer?.playWhenReady = playWhenReady
+                        castPlayer?.prepare()
+                    }
+                }
+
+                override fun onCastSessionUnavailable() {
+                    val currentMediaItem = castPlayer?.currentMediaItem
+                    val playWhenReady = castPlayer?.playWhenReady ?: false
+                    castPlayer?.stop()
+                    
+                    mediaSession?.player = player!!
+                    if (currentMediaItem != null) {
+                        player?.setMediaItem(currentMediaItem)
+                        player?.playWhenReady = playWhenReady
+                        player?.prepare()
+                    }
+                }
+            })
+            
+            castPlayer?.addListener(object : androidx.media3.common.Player.Listener {
+                override fun onEvents(player: androidx.media3.common.Player, events: androidx.media3.common.Player.Events) {
+                    if (events.containsAny(
+                            androidx.media3.common.Player.EVENT_IS_PLAYING_CHANGED,
+                            androidx.media3.common.Player.EVENT_MEDIA_METADATA_CHANGED,
+                            androidx.media3.common.Player.EVENT_PLAYBACK_STATE_CHANGED
+                        )) {
+                        broadcastWidgetState()
+                    }
+                }
+            })
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    private fun playFallbackRingtone() {
+        try {
+            val uri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_ALARM)
+            fallbackRingtone = android.media.RingtoneManager.getRingtone(this@RadioPlaybackService, uri)
+            fallbackRingtone?.play()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun broadcastWidgetState() {
-        val currentPlayer = player ?: return
+        val currentPlayer = mediaSession?.player ?: player ?: return
         val metadata = currentPlayer.currentMediaItem?.mediaMetadata
         val title = metadata?.title?.toString() ?: metadata?.displayTitle?.toString() ?: "AltaVox Radio"
         val logoUrl = metadata?.artworkUri?.toString()
         val isPlaying = currentPlayer.isPlaying
 
         // Fetch dynamic audio format details
-        val audioFormat = currentPlayer.audioFormat
+        val audioFormat = (currentPlayer as? ExoPlayer)?.audioFormat
         val mimeType = audioFormat?.sampleMimeType
         val bitrate = audioFormat?.bitrate ?: -1
         
@@ -196,8 +269,9 @@ class RadioPlaybackService : MediaSessionService() {
         if (action != null) {
             when (action) {
                 ACTION_PLAY_PAUSE -> {
-                    val currentPlayer = player
+                    val currentPlayer = mediaSession?.player ?: player
                     if (currentPlayer != null) {
+                        fallbackRingtone?.stop()
                         if (currentPlayer.isPlaying) currentPlayer.pause() else currentPlayer.play()
                     } else {
                         // Cold start: wait for player initialization and automatically start playback
@@ -232,7 +306,9 @@ class RadioPlaybackService : MediaSessionService() {
                 }
                 ACTION_PLAY_STATION -> {
                     val stationId = intent.getLongExtra(EXTRA_STATION_ID, -1L)
+                    val isAlarm = intent.getBooleanExtra(EXTRA_IS_ALARM, false)
                     if (stationId != -1L) {
+                        isCurrentlyPlayingAlarm = isAlarm
                         playStationById(stationId)
                     }
                 }
@@ -258,11 +334,11 @@ class RadioPlaybackService : MediaSessionService() {
             val stations = db.stationDao().getAllStations().first()
             if (stations.isEmpty()) return@launch
 
-            var currentPlayer = player
+            var currentPlayer = mediaSession?.player ?: player
             for (i in 1..10) {
                 if (currentPlayer != null) break
                 delay(200)
-                currentPlayer = player
+                currentPlayer = mediaSession?.player ?: player
             }
             if (currentPlayer == null) return@launch
 
@@ -291,16 +367,24 @@ class RadioPlaybackService : MediaSessionService() {
     }
 
     private fun playStationOnPlayer(station: Station) {
-        val currentPlayer = player ?: return
+        val currentPlayer = mediaSession?.player ?: player ?: return
+        currentPlayer.stop()
         val mediaMetadata = androidx.media3.common.MediaMetadata.Builder()
             .setTitle(station.name)
             .setArtworkUri(station.logoUrl?.let { Uri.parse(it) })
             .build()
 
+        val mimeType = when {
+            station.streamUrl.endsWith(".m3u8", ignoreCase = true) -> androidx.media3.common.MimeTypes.APPLICATION_M3U8
+            station.streamUrl.endsWith(".aac", ignoreCase = true) -> androidx.media3.common.MimeTypes.AUDIO_AAC
+            else -> androidx.media3.common.MimeTypes.AUDIO_MPEG // Default fallback for Cast
+        }
+
         val mediaItem = androidx.media3.common.MediaItem.Builder()
             .setUri(station.streamUrl)
             .setMediaId(station.id.toString())
             .setMediaMetadata(mediaMetadata)
+            .setMimeType(mimeType)
             .build()
 
         currentPlayer.setMediaItem(mediaItem)
@@ -329,11 +413,10 @@ class RadioPlaybackService : MediaSessionService() {
         }
         sendBroadcast(intent)
 
-        mediaSession?.run {
-            player.release()
-            release()
-            mediaSession = null
-        }
+        fallbackRingtone?.stop()
+        castPlayer?.release()
+        player?.release()
+        mediaSession?.release()
         super.onDestroy()
     }
 

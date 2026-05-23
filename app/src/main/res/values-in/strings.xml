@@ -96,6 +96,7 @@
     <string name="hex_code_label">Kode Warna Hex</string>
     <string name="failed_update_remote">Gagal memperbarui dari server jarak jauh.</string>
     <string name="url_cannot_be_blank">URL tidak boleh kosong</string>
+    <string name="playing">Memutar...</string>
     <string name="back_desc">Kembali</string>
     <string name="stop_preview">Hentikan Pratinjau</string>
     <string name="play_preview">Putar Pratinjau</string>
@@ -141,4 +142,15 @@
     <string name="url_supporting_text">Alamat streaming radio</string>
     <string name="logo_supporting_text">Ikon radio. Gambar dari tautan akan otomatis diperkecil agar tidak memberatkan memori HP.</string>
     <string name="category_supporting_text">Kategori pada aplikasi</string>
+
+    <!-- Alarm & Sleep Timer -->
+    <string name="sleep_timer">Waktu Tidur</string>
+    <string name="alarm_clock">Jam Weker</string>
+    <string name="sleep_timer_off">Mati</string>
+    <string name="sleep_timer_mins">%1$d Menit</string>
+    <string name="alarm_enabled">Aktifkan Weker</string>
+    <string name="alarm_time">Waktu Weker</string>
+    <string name="alarm_station">Stasiun Radio</string>
+    <string name="select_station">Pilih Stasiun</string>
+    <string name="alarm_test">Tes Nada Weker</string>
 </resources>

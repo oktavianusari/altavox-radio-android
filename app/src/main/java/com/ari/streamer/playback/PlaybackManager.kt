@@ -57,6 +57,23 @@ class PlaybackManager(context: Context) {
                 _playbackState.value = _playbackState.value.copy(nowPlayingTitle = title)
             }
 
+            override fun onMetadata(metadata: androidx.media3.common.Metadata) {
+                var newTitle: String? = null
+                for (i in 0 until metadata.length()) {
+                    val entry = metadata.get(i)
+                    if (entry is androidx.media3.extractor.metadata.icy.IcyInfo) {
+                        newTitle = entry.title
+                    } else if (entry is androidx.media3.extractor.metadata.id3.TextInformationFrame) {
+                        if (entry.id == "TIT2" || entry.id == "TT2") {
+                            newTitle = entry.value
+                        }
+                    }
+                }
+                if (!newTitle.isNullOrBlank()) {
+                    _playbackState.value = _playbackState.value.copy(nowPlayingTitle = newTitle)
+                }
+            }
+
             override fun onTracksChanged(tracks: Tracks) {
                 var formatName: String? = null
                 var bitrateStr: String? = null

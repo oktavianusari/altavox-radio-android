@@ -42,6 +42,10 @@ class UserPreferences(private val context: Context) {
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val LAST_PLAYED_STATION_ID = androidx.datastore.preferences.core.longPreferencesKey("last_played_station_id")
         val M3U_URL = stringPreferencesKey("m3u_url")
+        val ALARM_ENABLED = booleanPreferencesKey("alarm_enabled")
+        val ALARM_HOUR = androidx.datastore.preferences.core.intPreferencesKey("alarm_hour")
+        val ALARM_MINUTE = androidx.datastore.preferences.core.intPreferencesKey("alarm_minute")
+        val ALARM_STATION_ID = androidx.datastore.preferences.core.longPreferencesKey("alarm_station_id")
     }
 
     val themeModeFlow: Flow<AppTheme> = context.dataStore.data.map { preferences ->
@@ -102,6 +106,22 @@ class UserPreferences(private val context: Context) {
 
     val m3uUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[M3U_URL] ?: "https://pastebin.com/raw/i4YM5tAL"
+    }
+
+    val alarmEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
+        preferences[ALARM_ENABLED] ?: false
+    }
+
+    val alarmHourFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[ALARM_HOUR] ?: 6
+    }
+
+    val alarmMinuteFlow: Flow<Int> = context.dataStore.data.map { preferences ->
+        preferences[ALARM_MINUTE] ?: 0
+    }
+
+    val alarmStationIdFlow: Flow<Long> = context.dataStore.data.map { preferences ->
+        preferences[ALARM_STATION_ID] ?: -1L
     }
 
     suspend fun setThemeMode(mode: AppTheme) {
@@ -183,6 +203,25 @@ class UserPreferences(private val context: Context) {
     suspend fun setM3uUrl(url: String) {
         context.dataStore.edit { preferences ->
             preferences[M3U_URL] = url
+        }
+    }
+
+    suspend fun setAlarmEnabled(enabled: Boolean) {
+        context.dataStore.edit { preferences ->
+            preferences[ALARM_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setAlarmTime(hour: Int, minute: Int) {
+        context.dataStore.edit { preferences ->
+            preferences[ALARM_HOUR] = hour
+            preferences[ALARM_MINUTE] = minute
+        }
+    }
+
+    suspend fun setAlarmStationId(stationId: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[ALARM_STATION_ID] = stationId
         }
     }
 }

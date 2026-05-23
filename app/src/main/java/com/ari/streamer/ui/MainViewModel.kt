@@ -1,6 +1,7 @@
 package com.ari.streamer.ui
 
 import android.app.Application
+import android.os.CountDownTimer
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.ari.streamer.data.AppDatabase
@@ -27,7 +28,7 @@ import java.io.InputStream
 class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val stationDao = db.stationDao()
-    private val userPreferences = UserPreferences(application)
+    val userPreferences = UserPreferences(application)
     
     val playbackManager = PlaybackManager(application)
 
@@ -86,6 +87,64 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     val m3uUrl = userPreferences.m3uUrlFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "https://pastebin.com/raw/i4YM5tAL")
+
+    val alarmEnabled = userPreferences.alarmEnabledFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    val alarmHour = userPreferences.alarmHourFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 6)
+
+    val alarmMinute = userPreferences.alarmMinuteFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
+
+    val alarmStationId = userPreferences.alarmStationIdFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), -1L)
+
+    private var sleepTimer: CountDownTimer? = null
+    private val _sleepTimerMillis = MutableStateFlow<Long>(0L)
+    val sleepTimerMillis = _sleepTimerMillis.asStateFlow()
+
+    fun startSleepTimerAt(targetHour: Int, targetMinute: Int) {
+        cancelSleepTimer()
+        val calendar = java.util.Calendar.getInstance()
+        val currentMillis = calendar.timeInMillis
+        
+        calendar.set(java.util.Calendar.HOUR_OF_DAY, targetHour)
+        calendar.set(java.util.Calendar.MINUTE, targetMinute)
+        calendar.set(java.util.Calendar.SECOND, 0)
+        
+        if (calendar.timeInMillis <= currentMillis) {
+            calendar.add(java.util.Calendar.DAY_OF_YEAR, 1)
+        }
+        
+        val millis = calendar.timeInMillis - currentMillis
+        
+        sleepTimer = object : CountDownTimer(millis, 1000) {
+            override fun onTick(millisUntilFinished: Long) {
+                _sleepTimerMillis.value = millisUntilFinished
+            }
+
+            override fun onFinish() {
+                _sleepTimerMillis.value = 0L
+                playbackManager.pause()
+            }
+        }.start()
+        _sleepTimerMillis.value = millis
+    }
+
+    fun cancelSleepTimer() {
+        sleepTimer?.cancel()
+        sleepTimer = null
+        _sleepTimerMillis.value = 0L
+    }
+
+    fun saveAlarmSettings(enabled: Boolean, hour: Int, minute: Int, stationId: Long) {
+        viewModelScope.launch {
+            userPreferences.setAlarmEnabled(enabled)
+            userPreferences.setAlarmTime(hour, minute)
+            userPreferences.setAlarmStationId(stationId)
+        }
+    }
 
     enum class UpdateStatus { Idle, Loading, Success, Error }
     

@@ -31,6 +31,17 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
+import android.content.ContextWrapper
+import android.app.Activity
+
+fun android.content.Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
+}
 
 sealed class LazyPlaylistItem {
     data class Header(val title: String) : LazyPlaylistItem()
@@ -61,9 +72,18 @@ fun MainScreen(
     var isSelectionMode by remember { mutableStateOf(false) }
     var selectedStationIds by remember { mutableStateOf(setOf<Long>()) }
     var showBulkDeleteDialog by remember { mutableStateOf(false) }
-
     var showAddMenu by remember { mutableStateOf(false) }
+    var stationToDelete by remember { mutableStateOf<Station?>(null) }
     var isSearchExpanded by remember { mutableStateOf(false) }
+    
+    val sleepTimerMillis by viewModel.sleepTimerMillis.collectAsState()
+    val alarmEnabled by viewModel.alarmEnabled.collectAsState()
+    val alarmHour by viewModel.alarmHour.collectAsState()
+    val alarmMinute by viewModel.alarmMinute.collectAsState()
+    val alarmStationId by viewModel.alarmStationId.collectAsState()
+
+    var showSleepTimerDialog by remember { mutableStateOf(false) }
+    var showAlarmDialog by remember { mutableStateOf(false) }
 
     val filteredStations = remember(searchQuery, stations, categories) {
         val filtered = if (searchQuery.isBlank()) stations
@@ -267,6 +287,36 @@ fun MainScreen(
                                     }
                                 )
                                 DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.sleep_timer)) },
+                                    onClick = {
+                                        showAddMenu = false
+                                        showSleepTimerDialog = true
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.alarm_clock)) },
+                                    onClick = {
+                                        showAddMenu = false
+                                        showAlarmDialog = true
+                                    }
+                                )
+                                if (playbackState.isPlaying) {
+                                    DropdownMenuItem(
+                                        text = { Text("Cast to TV/Speaker") },
+                                        trailingIcon = {
+                                            androidx.compose.ui.viewinterop.AndroidView(
+                                                factory = { context ->
+                                                    val themedContext = androidx.appcompat.view.ContextThemeWrapper(context, androidx.appcompat.R.style.Theme_AppCompat_Light_NoActionBar)
+                                                    androidx.mediarouter.app.MediaRouteButton(themedContext).apply {
+                                                        com.google.android.gms.cast.framework.CastButtonFactory.setUpMediaRouteButton(themedContext, this)
+                                                    }
+                                                }
+                                            )
+                                        },
+                                        onClick = { showAddMenu = false }
+                                    )
+                                }
+                                DropdownMenuItem(
                                     text = { Text(stringResource(R.string.settings)) },
                                     onClick = {
                                         showAddMenu = false
@@ -288,6 +338,10 @@ fun MainScreen(
                     format = playbackState.format,
                     bitrate = playbackState.bitrate,
                     nowPlayingTitle = playbackState.nowPlayingTitle,
+                    alarmEnabled = alarmEnabled,
+                    alarmHour = alarmHour,
+                    alarmMinute = alarmMinute,
+                    sleepTimerMillis = sleepTimerMillis,
                     onPlayPause = {
                         if (playbackState.isPlaying) viewModel.playbackManager.stop()
                         else viewModel.playbackManager.play()
@@ -465,7 +519,7 @@ fun MainScreen(
                                                             onClick = { viewModel.playStation(item.station) },
                                                             onPlay = { viewModel.playStation(item.station) },
                                                             onEdit = { stationToEdit = item.station },
-                                                            onDelete = { viewModel.deleteStation(item.station) },
+                                                            onDelete = { stationToDelete = item.station },
                                                             onSelectMultiple = {
                                                                 isSelectionMode = true
                                                                 selectedStationIds = setOf(item.station.id)
@@ -596,7 +650,7 @@ fun MainScreen(
                                                         onClick = { viewModel.playStation(item.station) },
                                                         onPlay = { viewModel.playStation(item.station) },
                                                         onEdit = { stationToEdit = item.station },
-                                                        onDelete = { viewModel.deleteStation(item.station) },
+                                                        onDelete = { stationToDelete = item.station },
                                                         onSelectMultiple = {
                                                             isSelectionMode = true
                                                             selectedStationIds = setOf(item.station.id)
@@ -652,9 +706,27 @@ fun MainScreen(
                 stationToEdit = null
             },
             onDelete = {
-                viewModel.deleteStation(stationToEdit!!)
-                stationToEdit = null
+                stationToDelete = stationToEdit
             }
+        )
+    }
+
+    if (showSleepTimerDialog) {
+        SleepTimerDialog(
+            onDismiss = { showSleepTimerDialog = false },
+            onSelect = { h, m ->
+                if (h == -1) viewModel.cancelSleepTimer() else viewModel.startSleepTimerAt(h, m)
+                showSleepTimerDialog = false
+            }
+        )
+    }
+
+    if (showAlarmDialog) {
+        AlarmClockDialog(
+            viewModel = viewModel,
+            stations = stations,
+            categories = categories,
+            onDismiss = { showAlarmDialog = false }
         )
     }
 
@@ -675,6 +747,32 @@ fun MainScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showWarningDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (stationToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { stationToDelete = null },
+            title = { Text(stringResource(R.string.warning)) },
+            text = { Text("Are you sure you want to delete ${stationToDelete?.name}?") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        stationToDelete?.let {
+                            viewModel.deleteStation(it)
+                        }
+                        stationToDelete = null
+                        stationToEdit = null
+                    }
+                ) {
+                    Text(stringResource(R.string.delete))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { stationToDelete = null }) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -1089,6 +1187,10 @@ fun NowPlayingBar(
     format: String?,
     bitrate: String?,
     nowPlayingTitle: String?,
+    alarmEnabled: Boolean,
+    alarmHour: Int,
+    alarmMinute: Int,
+    sleepTimerMillis: Long,
     onPlayPause: () -> Unit,
     onPrevious: () -> Unit,
     onNext: () -> Unit
@@ -1131,12 +1233,33 @@ fun NowPlayingBar(
                     modifier = Modifier.basicMarquee(delayMillis = 5000)
                 )
                 
+                var showMetadata by remember { mutableStateOf(true) }
+                LaunchedEffect(Unit) {
+                    while(true) {
+                        kotlinx.coroutines.delay(10000)
+                        showMetadata = !showMetadata
+                    }
+                }
+
                 val details = mutableListOf<String>()
                 if (nowPlayingTitle?.startsWith("Error:") == true) {
+                    details.add(nowPlayingTitle)
+                } else if (showMetadata && !nowPlayingTitle.isNullOrBlank() && nowPlayingTitle != station.name) {
                     details.add(nowPlayingTitle)
                 } else {
                     if (format != null) details.add(format)
                     if (bitrate != null) details.add(bitrate)
+                }
+                
+                if (alarmEnabled) {
+                    details.add("⏰ ${String.format("%02d:%02d", alarmHour, alarmMinute)}")
+                }
+                if (sleepTimerMillis > 0) {
+                    val totalMins = (sleepTimerMillis / 60000).toInt() + 1
+                    val h = totalMins / 60
+                    val m = totalMins % 60
+                    val timeStr = if (h > 0) "${h}j ${m}m" else "${m}m"
+                    details.add("🌙 $timeStr")
                 }
                 
                 if (details.isNotEmpty()) {
@@ -1144,14 +1267,14 @@ fun NowPlayingBar(
                         text = details.joinToString(" • "),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                        maxLines = 1
+                        maxLines = 1,
+                        modifier = Modifier.basicMarquee(delayMillis = 5000)
                     )
                 } else {
                     Text(
-                        text = "Loading...",
+                        text = stringResource(R.string.playing),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-                        maxLines = 1
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
                 }
             }
@@ -1293,6 +1416,153 @@ fun EditStationDialog(
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.cancel))
                 }
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SleepTimerDialog(onDismiss: () -> Unit, onSelect: (Int, Int) -> Unit) {
+    val calendar = java.util.Calendar.getInstance()
+    val timePickerState = androidx.compose.material3.rememberTimePickerState(
+        initialHour = calendar.get(java.util.Calendar.HOUR_OF_DAY),
+        initialMinute = calendar.get(java.util.Calendar.MINUTE),
+        is24Hour = true
+    )
+    var isEnabled by remember { mutableStateOf(false) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.sleep_timer)) },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text("Sleep Timer On/Off", modifier = Modifier.weight(1f))
+                    Switch(checked = isEnabled, onCheckedChange = { isEnabled = it })
+                }
+                
+                if (isEnabled) {
+                    androidx.compose.material3.TimePicker(state = timePickerState)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { 
+                    if (isEnabled) {
+                        onSelect(timePickerState.hour, timePickerState.minute)
+                    } else {
+                        onSelect(-1, -1)
+                    }
+                }
+            ) {
+                Text(if (isEnabled) "Set Sleep Timer" else stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AlarmClockDialog(
+    viewModel: MainViewModel,
+    stations: List<Station>,
+    categories: List<com.ari.streamer.data.Category>,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    
+    val alarmEnabled by viewModel.alarmEnabled.collectAsState()
+    val alarmHour by viewModel.alarmHour.collectAsState()
+    val alarmMinute by viewModel.alarmMinute.collectAsState()
+    val alarmStationId by viewModel.alarmStationId.collectAsState()
+
+    var isEnabled by remember { mutableStateOf(alarmEnabled) }
+    var stationId by remember { mutableStateOf(alarmStationId) }
+    var expanded by remember { mutableStateOf(false) }
+
+    val timePickerState = androidx.compose.material3.rememberTimePickerState(
+        initialHour = alarmHour,
+        initialMinute = alarmMinute,
+        is24Hour = true
+    )
+
+    val currentStationName = stations.find { it.id == stationId }?.name ?: stringResource(R.string.select_station)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.alarm_clock)) },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text(stringResource(R.string.alarm_enabled), modifier = Modifier.weight(1f))
+                    Switch(checked = isEnabled, onCheckedChange = { isEnabled = it })
+                }
+                
+                if (isEnabled) {
+                    androidx.compose.material3.TimePicker(state = timePickerState)
+
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = !expanded },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        OutlinedTextField(
+                            value = currentStationName,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(R.string.alarm_station)) },
+                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(),
+                            modifier = Modifier.menuAnchor().fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            stations.sortedBy { it.name.lowercase() }.forEach { st ->
+                                DropdownMenuItem(
+                                    text = { Text(st.name) },
+                                    onClick = {
+                                        stationId = st.id
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    viewModel.saveAlarmSettings(isEnabled, timePickerState.hour, timePickerState.minute, stationId)
+                    com.ari.streamer.playback.AlarmManagerHelper.scheduleAlarm(context, isEnabled, timePickerState.hour, timePickerState.minute)
+                    onDismiss()
+                }
+            ) {
+                Text(if (isEnabled) "Set Radio Alarm On" else stringResource(R.string.save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
             }
         }
     )

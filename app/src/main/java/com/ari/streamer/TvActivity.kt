@@ -19,6 +19,7 @@ import com.ari.streamer.data.AppTheme
 import com.ari.streamer.service.RadioPlaybackService
 import com.ari.streamer.ui.MainViewModel
 import com.ari.streamer.ui.theme.StreamerTheme
+import com.ari.streamer.ui.AddManualRadioScreen
 import com.ari.streamer.ui.tv.TvMainScreen
 import com.ari.streamer.ui.tv.TvSettingsScreen
 import com.ari.streamer.ui.tv.TvSearchScreen
@@ -28,6 +29,19 @@ class TvActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        val configuration = resources.configuration
+        val isTablet = configuration.screenWidthDp >= 600
+        val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        
+        val uiModeManager = getSystemService(android.content.Context.UI_MODE_SERVICE) as android.app.UiModeManager
+        val isTv = uiModeManager.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        
+        if (!isTv && !isTablet && !isLandscape) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+            return
+        }
         
         // Start foreground service if needed or let ExoPlayer handle it
         val intent = Intent(this, RadioPlaybackService::class.java)
@@ -108,7 +122,14 @@ class TvActivity : ComponentActivity() {
                                 TvMainScreen(
                                     viewModel = viewModel,
                                     onNavigateToSettings = { navController.navigate("settings") },
-                                    onNavigateToSearch = { navController.navigate("search") }
+                                    onNavigateToSearch = { navController.navigate("search") },
+                                    onNavigateToAddManual = { navController.navigate("add_manual") }
+                                )
+                            }
+                            composable("add_manual") {
+                                AddManualRadioScreen(
+                                    viewModel = viewModel,
+                                    onNavigateBack = { navController.popBackStack() }
                                 )
                             }
                             composable("settings") {

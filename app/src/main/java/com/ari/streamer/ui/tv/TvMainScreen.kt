@@ -20,7 +20,8 @@ import com.ari.streamer.ui.theme.parseColor
 fun TvMainScreen(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit,
-    onNavigateToSearch: () -> Unit
+    onNavigateToSearch: () -> Unit,
+    onNavigateToAddManual: () -> Unit
 ) {
     val playbackState by viewModel.playbackManager.playbackState.collectAsState()
     val stations by viewModel.stations.collectAsState()
@@ -74,6 +75,7 @@ fun TvMainScreen(
                     },
                     onSettingsClick = onNavigateToSettings,
                     onSearchClick = onNavigateToSearch,
+                    onAddClick = onNavigateToAddManual,
                     viewModel = viewModel
                 )
             }

@@ -67,6 +67,11 @@ dependencies {
     implementation("androidx.media3:media3-session:$media3Version")
     implementation("androidx.media3:media3-exoplayer-hls:$media3Version")
     implementation("androidx.media3:media3-datasource-okhttp:$media3Version")
+    implementation("androidx.media3:media3-cast:$media3Version")
+
+    // Google Cast
+    implementation("com.google.android.gms:play-services-cast-framework:21.4.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
 
     // Room
     val roomVersion = "2.6.1"

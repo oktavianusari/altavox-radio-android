@@ -1,6 +1,7 @@
 package com.ari.streamer.ui.tv
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -149,8 +150,8 @@ fun TvSettingsScreen(
                                     ) else Border.None
                                 )
                             ) {
-                                if (isSelected) {
-                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.fillMaxSize().clickable { viewModel.setTvGradientColor1(colorHex) }, contentAlignment = Alignment.Center) {
+                                    if (isSelected) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = "Selected",
@@ -203,8 +204,8 @@ fun TvSettingsScreen(
                                     ) else Border.None
                                 )
                             ) {
-                                if (isSelected) {
-                                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.fillMaxSize().clickable { viewModel.setTvGradientColor2(colorHex) }, contentAlignment = Alignment.Center) {
+                                    if (isSelected) {
                                         Icon(
                                             imageVector = Icons.Default.Check,
                                             contentDescription = "Selected",
@@ -239,7 +240,7 @@ fun TvSettingsScreen(
                         border = cardBorder
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
+                            modifier = Modifier.fillMaxSize().clickable { viewModel.setUseLargerBuffer(!useLargerBuffer) }.padding(horizontal = 20.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -325,7 +326,10 @@ fun TvSettingsScreen(
                         border = cardBorder
                     ) {
                         Row(
-                            modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp),
+                            modifier = Modifier.fillMaxSize().clickable {
+                                viewModel.setM3uUrl(m3uUrl)
+                                viewModel.updateFromRemoteM3u(m3uUrl)
+                            }.padding(horizontal = 20.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
@@ -375,7 +379,7 @@ fun TvSettingsScreen(
                     ),
                     border = cardBorder
                 ) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.fillMaxSize().clickable { onNavigateBack() }, contentAlignment = Alignment.Center) {
                         Text(
                             text = "BACK TO CATALOG",
                             color = Color.White,

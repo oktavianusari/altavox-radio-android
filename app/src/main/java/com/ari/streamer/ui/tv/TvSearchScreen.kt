@@ -3,6 +3,7 @@ package com.ari.streamer.ui.tv
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -109,7 +110,7 @@ fun TvSearchScreen(
                             focusedContainerColor = Color.White.copy(alpha = 0.2f)
                         )
                     ) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.fillMaxSize().clickable { onNavigateBack() }, contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "Back",
@@ -271,7 +272,27 @@ fun TvSearchScreen(
                         ),
                         border = cardBorder
                     ) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.fillMaxSize().clickable {
+                            if (nameQuery.isBlank() && countryQuery.isBlank() && cityQuery.isBlank()) {
+                                Toast.makeText(context, "Please enter some search criteria", Toast.LENGTH_SHORT).show()
+                                return@clickable
+                            }
+                            isLoading = true
+                            coroutineScope.launch {
+                                try {
+                                    val results = NetworkClient.searchRadioStations(nameQuery, countryQuery, cityQuery)
+                                    searchResults = results
+                                    if (results.isEmpty()) {
+                                        Toast.makeText(context, "No stations found with the criteria.", Toast.LENGTH_LONG).show()
+                                    }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    Toast.makeText(context, "Search failed: ${e.message}", Toast.LENGTH_LONG).show()
+                                } finally {
+                                    isLoading = false
+                                }
+                            }
+                        }, contentAlignment = Alignment.Center) {
                             if (isLoading) {
                                 androidx.compose.material3.CircularProgressIndicator(
                                     modifier = Modifier.size(24.dp),
@@ -393,7 +414,21 @@ fun TvSearchScreen(
                                     focusedContainerColor = if (isPlayingActive) Color(0xFFFF5252) else Color(0xFF1ED760)
                                 )
                             ) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.fillMaxSize().clickable {
+                                    if (isPlayingActive) {
+                                        viewModel.playbackManager.stop()
+                                    } else {
+                                        val previewStation = Station(
+                                            id = 0,
+                                            name = result.name,
+                                            streamUrl = result.streamUrl,
+                                            logoUrl = result.logoUrl,
+                                            categoryId = null,
+                                            orderIndex = 0
+                                        )
+                                        viewModel.playStation(previewStation)
+                                    }
+                                }, contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = if (isPlayingActive) Icons.Default.Stop else Icons.Default.PlayArrow,
                                         contentDescription = if (isPlayingActive) "Stop Preview" else "Play Preview",
@@ -418,7 +453,10 @@ fun TvSearchScreen(
                                     focusedContainerColor = Color.White.copy(alpha = 0.3f)
                                 )
                             ) {
-                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Box(modifier = Modifier.fillMaxSize().clickable {
+                                    selectedResultForAdd = result
+                                    showCategoryDialog = true
+                                }, contentAlignment = Alignment.Center) {
                                     Icon(
                                         imageVector = Icons.Default.Add,
                                         contentDescription = "Add Station",
@@ -501,7 +539,17 @@ fun TvSearchScreen(
                                     ),
                                     scale = CardDefaults.scale(focusedScale = 1.02f)
                                 ) {
-                                    Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
+                                    Box(modifier = Modifier.fillMaxSize().clickable {
+                                        viewModel.addStation(
+                                            name = result.name,
+                                            url = result.streamUrl,
+                                            logoUrl = result.logoUrl,
+                                            categoryId = null
+                                        )
+                                        Toast.makeText(context, "${result.name} added!", Toast.LENGTH_SHORT).show()
+                                        showCategoryDialog = false
+                                        selectedResultForAdd = null
+                                    }.padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
                                         Text(text = "Uncategorized", color = Color.White, fontWeight = FontWeight.Medium)
                                     }
                                 }
@@ -528,7 +576,17 @@ fun TvSearchScreen(
                                     ),
                                     scale = CardDefaults.scale(focusedScale = 1.02f)
                                 ) {
-                                    Box(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
+                                    Box(modifier = Modifier.fillMaxSize().clickable {
+                                        viewModel.addStation(
+                                            name = result.name,
+                                            url = result.streamUrl,
+                                            logoUrl = result.logoUrl,
+                                            categoryId = category.id
+                                        )
+                                        Toast.makeText(context, "${result.name} added to ${category.name}!", Toast.LENGTH_SHORT).show()
+                                        showCategoryDialog = false
+                                        selectedResultForAdd = null
+                                    }.padding(horizontal = 16.dp), contentAlignment = Alignment.CenterStart) {
                                         Text(text = category.name, color = Color.White, fontWeight = FontWeight.Medium)
                                     }
                                 }

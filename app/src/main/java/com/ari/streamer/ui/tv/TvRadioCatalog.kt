@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -60,6 +61,7 @@ fun TvRadioCatalog(
     onPlayPauseClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onSearchClick: () -> Unit,
+    onAddClick: () -> Unit,
     viewModel: MainViewModel
 ) {
     val context = LocalContext.current
@@ -146,7 +148,26 @@ fun TvRadioCatalog(
                             focusedContainerColor = Color.White.copy(alpha = 0.2f)
                         )
                     ) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.fillMaxSize().clickable { onSearchClick() }, contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Search Radio",
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+
+                    Card(
+                        onClick = onAddClick,
+                        modifier = Modifier.size(44.dp),
+                        scale = CardDefaults.scale(focusedScale = 1.1f),
+                        colors = CardDefaults.colors(
+                            containerColor = Color.White.copy(alpha = 0.08f),
+                            focusedContainerColor = Color.White.copy(alpha = 0.2f)
+                        )
+                    ) {
+                        Box(modifier = Modifier.fillMaxSize().clickable { onAddClick() }, contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Add,
                                 contentDescription = "Add Radio",
@@ -165,7 +186,7 @@ fun TvRadioCatalog(
                             focusedContainerColor = Color.White.copy(alpha = 0.2f)
                         )
                     ) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Box(modifier = Modifier.fillMaxSize().clickable { onSettingsClick() }, contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
@@ -232,7 +253,11 @@ fun TvRadioCatalog(
                             )
                         ) {
                             Column(
-                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                modifier = Modifier.fillMaxSize().clickable { 
+                                    if (updateStatus != MainViewModel.UpdateStatus.Loading) {
+                                        viewModel.updateFromRemoteM3u(m3uUrl)
+                                    }
+                                }.padding(16.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -281,7 +306,7 @@ fun TvRadioCatalog(
                             )
                         ) {
                             Column(
-                                modifier = Modifier.fillMaxSize().padding(16.dp),
+                                modifier = Modifier.fillMaxSize().clickable { onSearchClick() }.padding(16.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -433,7 +458,7 @@ fun TvStationCard(
         )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize().clickable { onClick() }
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)

@@ -3,7 +3,7 @@ package com.ari.streamer
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -32,7 +32,7 @@ import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
 
     private fun getLocalizedText(resId: Int, vararg args: Any): String {
@@ -86,9 +86,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Detect if running on TV and redirect to TvActivity
+        // Detect if running on TV, Tablet, or Landscape mode and redirect to TvActivity
+        val configuration = resources.configuration
+        val isTablet = configuration.screenWidthDp >= 600
+        val isLandscape = configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+        
         val uiModeManager = getSystemService(android.content.Context.UI_MODE_SERVICE) as android.app.UiModeManager
-        if (uiModeManager.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION) {
+        val isTv = uiModeManager.currentModeType == android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
+        
+        if (isTv || isTablet || isLandscape) {
             startActivity(Intent(this, TvActivity::class.java))
             finish()
             return

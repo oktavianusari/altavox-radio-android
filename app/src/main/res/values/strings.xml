@@ -98,6 +98,7 @@
     <string name="failed_update_remote">Failed to update from remote server.</string>
     <string name="url_cannot_be_blank">URL cannot be blank</string>
     <string name="back_desc">Back</string>
+    <string name="playing">Playing...</string>
     <string name="stop_preview">Stop Preview</string>
     <string name="play_preview">Play Preview</string>
     <string name="add_to_local_list">Add to local list</string>
@@ -142,4 +143,15 @@
     <string name="url_supporting_text">Streaming radio address</string>
     <string name="logo_supporting_text">Radio icon. The linked image will be automatically scaled down to save memory.</string>
     <string name="category_supporting_text">Target category in the app</string>
+
+    <!-- Alarm & Sleep Timer -->
+    <string name="sleep_timer">Sleep Timer</string>
+    <string name="alarm_clock">Alarm Clock</string>
+    <string name="sleep_timer_off">Off</string>
+    <string name="sleep_timer_mins">%1$d Minutes</string>
+    <string name="alarm_enabled">Alarm Enabled</string>
+    <string name="alarm_time">Alarm Time</string>
+    <string name="alarm_station">Alarm Station</string>
+    <string name="select_station">Select Station</string>
+    <string name="alarm_test">Test Alarm Tone</string>
 </resources>
