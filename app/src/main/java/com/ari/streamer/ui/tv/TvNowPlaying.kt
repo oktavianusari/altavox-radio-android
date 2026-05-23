@@ -57,15 +57,17 @@ fun TvNowPlaying(
             // Station Logo
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(station.logoUrl ?: "https://ui-avatars.com/api/?name=${station.name}&background=random")
+                    .data(station.logoUrl)
                     .crossfade(true)
+                    .error(com.ari.streamer.R.drawable.ic_radio)
+                    .fallback(com.ari.streamer.R.drawable.ic_radio)
                     .build(),
                 contentDescription = "Now Playing Logo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(Color.White)
+                    .background(androidx.compose.ui.graphics.Color(0xFF1E2A24))
             )
 
             // Info text Column

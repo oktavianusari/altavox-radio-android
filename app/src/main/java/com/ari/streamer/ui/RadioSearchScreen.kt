@@ -393,17 +393,17 @@ fun SearchResultItem(
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(result.logoUrl)
-                    .size(128) // Ultra-light memory footprint
+                    .size(128)
                     .crossfade(true)
-                    .error(R.drawable.ic_launcher)
-                    .fallback(R.drawable.ic_launcher)
+                    .error(R.drawable.ic_radio)
+                    .fallback(R.drawable.ic_radio)
                     .build(),
                 contentDescription = null,
                 contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(androidx.compose.ui.graphics.Color.White) // Ensure transparent logos have white background
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .border(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(8.dp))
             )
 

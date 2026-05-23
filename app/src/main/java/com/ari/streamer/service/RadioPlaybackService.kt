@@ -262,6 +262,15 @@ class RadioPlaybackService : MediaSessionService() {
             putExtra("extra_format_bitrate", formatBitrate)
         }
         sendBroadcast(intent)
+
+        val intentLite = Intent("com.ari.streamer.widget.lite.ACTION_UPDATE_STATE").apply {
+            setPackage(packageName)
+            putExtra("extra_station_name", title)
+            putExtra("extra_is_playing", isPlaying)
+            putExtra("extra_logo_url", logoUrl)
+            putExtra("extra_format_bitrate", formatBitrate)
+        }
+        sendBroadcast(intentLite)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -412,6 +421,14 @@ class RadioPlaybackService : MediaSessionService() {
             putExtra("extra_logo_url", null as String?)
         }
         sendBroadcast(intent)
+
+        val intentLite = Intent("com.ari.streamer.widget.lite.ACTION_UPDATE_STATE").apply {
+            setPackage(packageName)
+            putExtra("extra_station_name", "No Active Station")
+            putExtra("extra_is_playing", false)
+            putExtra("extra_logo_url", null as String?)
+        }
+        sendBroadcast(intentLite)
 
         fallbackRingtone?.stop()
         castPlayer?.release()

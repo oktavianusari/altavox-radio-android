@@ -83,13 +83,13 @@ fun TvRadioCatalog(
     // Time state
     var currentTime by androidx.compose.runtime.remember { 
         androidx.compose.runtime.mutableStateOf(
-            java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+            java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
         ) 
     }
     
     androidx.compose.runtime.LaunchedEffect(Unit) {
         while (true) {
-            currentTime = java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+            currentTime = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault()).format(java.util.Date())
             kotlinx.coroutines.delay(10000) // Update every 10 seconds
         }
     }
@@ -462,8 +462,10 @@ fun TvStationCard(
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(station.logoUrl ?: "https://ui-avatars.com/api/?name=${station.name}&background=random")
+                    .data(station.logoUrl)
                     .crossfade(true)
+                    .error(com.ari.streamer.R.drawable.ic_radio)
+                    .fallback(com.ari.streamer.R.drawable.ic_radio)
                     .build(),
                 contentDescription = "Station Logo",
                 contentScale = ContentScale.Fit,
@@ -471,7 +473,10 @@ fun TvStationCard(
                     .fillMaxWidth()
                     .weight(1f)
                     .padding(8.dp)
-                    .background(Color.White, androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
+                    .background(
+                        androidx.compose.ui.graphics.Color(0xFF1E2A24),
+                        androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+                    )
             )
             
             Column(

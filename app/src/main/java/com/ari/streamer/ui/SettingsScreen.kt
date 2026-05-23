@@ -283,7 +283,9 @@ fun SettingsScreen(
                             }) {
                                 Text(stringResource(R.string.edit))
                             }
-                            if (!category.name.equals("Uncategorized", ignoreCase = true)) {
+                            if (!category.name.equals("Uncategorized", ignoreCase = true) && 
+                                !category.name.equals("Favourites", ignoreCase = true) && 
+                                !category.name.equals("Favorites", ignoreCase = true)) {
                                 TextButton(onClick = { viewModel.deleteCategory(category) }) {
                                     Text(stringResource(R.string.delete))
                                 }

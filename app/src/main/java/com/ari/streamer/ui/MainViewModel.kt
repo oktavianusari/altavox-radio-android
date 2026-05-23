@@ -187,6 +187,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             }
             context.sendBroadcast(intent)
         }
+
+        // Lite Widget
+        val component4 = android.content.ComponentName(context, com.ari.streamer.widget.LiteRadioWidgetProvider::class.java)
+        val ids4 = widgetManager.getAppWidgetIds(component4)
+        if (ids4.isNotEmpty()) {
+            val intent = android.content.Intent(context, com.ari.streamer.widget.LiteRadioWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids4)
+            }
+            context.sendBroadcast(intent)
+        }
     }
 
     fun resetUpdateStatus() {
@@ -222,15 +233,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun addStation(name: String, url: String, logoUrl: String?, categoryId: Long?) {
         viewModelScope.launch {
             val count = stations.value.size
+            // Resolve null categoryId to the actual Uncategorized category
+            val resolvedCategoryId: Long? = if (categoryId == null) {
+                val uncategorized = stationDao.getCategoryByName("Uncategorized")
+                    ?: run {
+                        // Create Uncategorized if it doesn't exist
+                        stationDao.insertCategory(Category(name = "Uncategorized", orderIndex = 999))
+                        stationDao.getCategoryByName("Uncategorized")
+                    }
+                uncategorized?.id
+            } else {
+                categoryId
+            }
             stationDao.insertStation(
                 Station(
                     name = name,
                     streamUrl = url,
                     logoUrl = logoUrl,
-                    categoryId = categoryId,
+                    categoryId = resolvedCategoryId,
                     orderIndex = count
                 )
             )
+            updateAllWidgets()
         }
     }
 
@@ -348,6 +372,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         stationDao.clearAllCategories()
 
         val newCategoriesMap = mutableMapOf<String, Long>()
+        
+        // Ensure Favourites exists as a default category
+        val favId = stationDao.insertCategory(Category(name = "Favourites", orderIndex = 0))
+        newCategoriesMap["favourites"] = favId
+        newCategoriesMap["favorites"] = favId
+
         var stationCounter = 0
 
         entries.forEach { entry ->
@@ -389,6 +419,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     stationDao.clearAllCategories()
                     
                     val newCategoriesMap = mutableMapOf<String, Long>()
+                    
+                    // Ensure Favourites exists as a default category
+                    val favId = stationDao.insertCategory(Category(name = "Favourites", orderIndex = 0))
+                    newCategoriesMap["favourites"] = favId
+                    newCategoriesMap["favorites"] = favId
+
                     var stationCounter = 0
 
                     entries.forEach { entry ->
