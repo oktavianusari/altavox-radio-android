@@ -59,15 +59,16 @@ fun TvNowPlaying(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(station.logoUrl)
                     .crossfade(true)
-                    .error(com.ari.streamer.R.drawable.ic_radio)
-                    .fallback(com.ari.streamer.R.drawable.ic_radio)
+                    .error(com.ari.streamer.R.drawable.ic_radio_dark)
+                    .fallback(com.ari.streamer.R.drawable.ic_radio_dark)
                     .build(),
                 contentDescription = "Now Playing Logo",
                 contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .size(36.dp)
                     .clip(RoundedCornerShape(6.dp))
-                    .background(androidx.compose.ui.graphics.Color(0xFF1E2A24))
+                    .background(androidx.compose.ui.graphics.Color.White)
+                    .padding(2.dp)
             )
 
             // Info text Column

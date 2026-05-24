@@ -234,7 +234,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
         if (bitmap != null) {
             views.setImageViewBitmap(R.id.widget_background, bitmap)
         } else {
-            views.setImageViewResource(R.id.widget_background, R.drawable.ic_launcher)
+            views.setImageViewResource(R.id.widget_background, R.drawable.ic_radio)
         }
 
         // BIND CONTROL PENDING INTENTS (Secure Broadcast Receiver calls)
@@ -313,7 +313,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
                 if (favBitmap1 != null) {
                     views.setImageViewBitmap(R.id.widget_fav_1_logo, favBitmap1)
                 } else {
-                    views.setImageViewResource(R.id.widget_fav_1_logo, R.drawable.ic_launcher)
+                    views.setImageViewResource(R.id.widget_fav_1_logo, R.drawable.ic_radio)
                 }
 
                 val favPlayIntent1 = Intent(context, RadioWidgetProvider::class.java).apply {
@@ -351,7 +351,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
                 if (favBitmap2 != null) {
                     views.setImageViewBitmap(R.id.widget_fav_2_logo, favBitmap2)
                 } else {
-                    views.setImageViewResource(R.id.widget_fav_2_logo, R.drawable.ic_launcher)
+                    views.setImageViewResource(R.id.widget_fav_2_logo, R.drawable.ic_radio)
                 }
 
                 val favPlayIntent2 = Intent(context, RadioWidgetProvider::class.java).apply {
@@ -464,3 +464,4 @@ class RadioWidgetProvider : AppWidgetProvider() {
         userPrefs.setLastPlayedStationId(station.id)
     }
 }
+

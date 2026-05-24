@@ -39,7 +39,7 @@
                 android:layout_marginEnd="10dp"
                 android:scaleType="fitCenter"
                 android:background="@drawable/widget_logo_bg"
-                android:src="@drawable/ic_launcher" />
+                android:src="@drawable/ic_radio" />
 
             <!-- Title & Info Stack -->
             <LinearLayout
@@ -111,3 +111,4 @@
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>
+

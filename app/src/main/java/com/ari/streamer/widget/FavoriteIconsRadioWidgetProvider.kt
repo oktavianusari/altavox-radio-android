@@ -229,7 +229,7 @@ class FavoriteIconsRadioWidgetProvider : AppWidgetProvider() {
         if (bitmap != null) {
             views.setImageViewBitmap(R.id.widget_logo, bitmap)
         } else {
-            views.setImageViewResource(R.id.widget_logo, R.drawable.ic_launcher)
+            views.setImageViewResource(R.id.widget_logo, R.drawable.ic_radio)
         }
 
         // BIND CONTROL PENDING INTENTS
@@ -309,7 +309,7 @@ class FavoriteIconsRadioWidgetProvider : AppWidgetProvider() {
                     if (favBitmap != null) {
                         views.setImageViewBitmap(favId, favBitmap)
                     } else {
-                        views.setImageViewResource(favId, R.drawable.ic_launcher)
+                        views.setImageViewResource(favId, R.drawable.ic_radio)
                     }
 
                     // Play this station click action
@@ -432,3 +432,4 @@ class FavoriteIconsRadioWidgetProvider : AppWidgetProvider() {
         userPrefs.setLastPlayedStationId(station.id)
     }
 }
+

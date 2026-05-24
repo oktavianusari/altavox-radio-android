@@ -131,13 +131,16 @@ fun TvRadioCatalog(
                         )
                     }
 
-                    Text(
-                        text = currentTime,
-                        color = Color.White.copy(alpha = 0.8f),
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    )
+                    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+                    if (configuration.screenWidthDp >= 800) {
+                        Text(
+                            text = currentTime,
+                            color = Color.White.copy(alpha = 0.8f),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    }
 
                     Card(
                         onClick = onSearchClick,
@@ -379,8 +382,8 @@ fun TvRadioCatalog(
             if (uncategorizedStations.isNotEmpty()) {
                 item {
                     Text(
-                        text = "OTHER STATIONS",
-                        color = Color.White,
+                        text = "UNCATEGORIZED",
+                        color = androidx.compose.ui.graphics.Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = 1.5.sp,
@@ -464,8 +467,8 @@ fun TvStationCard(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(station.logoUrl)
                     .crossfade(true)
-                    .error(com.ari.streamer.R.drawable.ic_radio)
-                    .fallback(com.ari.streamer.R.drawable.ic_radio)
+                    .error(com.ari.streamer.R.drawable.ic_radio_dark)
+                    .fallback(com.ari.streamer.R.drawable.ic_radio_dark)
                     .build(),
                 contentDescription = "Station Logo",
                 contentScale = ContentScale.Fit,
@@ -474,9 +477,10 @@ fun TvStationCard(
                     .weight(1f)
                     .padding(8.dp)
                     .background(
-                        androidx.compose.ui.graphics.Color(0xFF1E2A24),
+                        androidx.compose.ui.graphics.Color.White,
                         androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
                     )
+                    .padding(4.dp)
             )
             
             Column(

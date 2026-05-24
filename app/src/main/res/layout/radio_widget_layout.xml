@@ -32,7 +32,7 @@
                 android:layout_alignParentTop="true"
                 android:scaleType="fitCenter"
                 android:background="@drawable/widget_logo_bg"
-                android:src="@drawable/ic_launcher" />
+                android:src="@drawable/ic_radio" />
 
             <!-- Metadata and Play Controls Column on the Right (Fills remaining width) -->
             <RelativeLayout
@@ -161,7 +161,7 @@
                         android:scaleType="centerCrop"
                         android:background="@drawable/widget_fav_chip_bg"
                         android:padding="0.5dp"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
 
                     <TextView
                         android:id="@+id/widget_fav_1_name"
@@ -196,7 +196,7 @@
                         android:scaleType="centerCrop"
                         android:background="@drawable/widget_fav_chip_bg"
                         android:padding="0.5dp"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
 
                     <TextView
                         android:id="@+id/widget_fav_2_name"
@@ -214,3 +214,4 @@
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>
+

@@ -225,7 +225,7 @@ class CompactRadioWidgetProvider : AppWidgetProvider() {
         if (bitmap != null) {
             views.setImageViewBitmap(R.id.widget_logo, bitmap)
         } else {
-            views.setImageViewResource(R.id.widget_logo, R.drawable.ic_launcher)
+            views.setImageViewResource(R.id.widget_logo, R.drawable.ic_radio)
         }
 
         // BIND CONTROL PENDING INTENTS (Secure Broadcast Receiver calls)
@@ -348,3 +348,4 @@ class CompactRadioWidgetProvider : AppWidgetProvider() {
         userPrefs.setLastPlayedStationId(station.id)
     }
 }
+

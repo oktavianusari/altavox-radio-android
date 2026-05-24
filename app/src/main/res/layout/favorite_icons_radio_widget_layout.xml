@@ -32,7 +32,7 @@
                 android:layout_alignParentTop="true"
                 android:scaleType="fitCenter"
                 android:background="@drawable/widget_logo_bg"
-                android:src="@drawable/ic_launcher" />
+                android:src="@drawable/ic_radio" />
 
             <!-- Metadata and Play Controls Column on the Right -->
             <RelativeLayout
@@ -157,7 +157,7 @@
                         android:scaleType="centerCrop"
                         android:layout_gravity="center"
                         android:background="@drawable/widget_fav_chip_bg"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
                 </FrameLayout>
 
                 <!-- Fav 2 -->
@@ -173,7 +173,7 @@
                         android:scaleType="centerCrop"
                         android:layout_gravity="center"
                         android:background="@drawable/widget_fav_chip_bg"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
                 </FrameLayout>
 
                 <!-- Fav 3 -->
@@ -189,7 +189,7 @@
                         android:scaleType="centerCrop"
                         android:layout_gravity="center"
                         android:background="@drawable/widget_fav_chip_bg"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
                 </FrameLayout>
 
                 <!-- Fav 4 -->
@@ -205,7 +205,7 @@
                         android:scaleType="centerCrop"
                         android:layout_gravity="center"
                         android:background="@drawable/widget_fav_chip_bg"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
                 </FrameLayout>
 
                 <!-- Fav 5 -->
@@ -221,7 +221,7 @@
                         android:scaleType="centerCrop"
                         android:layout_gravity="center"
                         android:background="@drawable/widget_fav_chip_bg"
-                        android:src="@drawable/ic_launcher" />
+                        android:src="@drawable/ic_radio" />
                 </FrameLayout>
 
             </LinearLayout>
@@ -229,3 +229,4 @@
 
     </RelativeLayout>
 </FrameLayout>
+

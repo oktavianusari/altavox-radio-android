@@ -362,14 +362,14 @@ fun TvSearchScreen(
                                 model = ImageRequest.Builder(LocalContext.current)
                                     .data(result.logoUrl)
                                     .crossfade(true)
-                                    .error(com.ari.streamer.R.drawable.ic_radio)
-                                    .fallback(com.ari.streamer.R.drawable.ic_radio)
+                                    .error(com.ari.streamer.R.drawable.ic_radio_dark)
+                                    .fallback(com.ari.streamer.R.drawable.ic_radio_dark)
                                     .build(),
                                 contentDescription = "Station Logo",
                                 modifier = Modifier
                                     .size(56.dp)
                                     .background(
-                                        androidx.compose.ui.graphics.Color(0xFF1E2A24),
+                                        androidx.compose.ui.graphics.Color.White,
                                         androidx.compose.foundation.shape.RoundedCornerShape(6.dp)
                                     )
                                     .padding(4.dp)
