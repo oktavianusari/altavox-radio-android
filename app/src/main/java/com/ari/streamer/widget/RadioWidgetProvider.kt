@@ -189,18 +189,33 @@ class RadioWidgetProvider : AppWidgetProvider() {
     ) {
         val views = RemoteViews(context.packageName, R.layout.radio_widget_layout)
         
-        // Dynamically style background shape overlay based on user preferences
+                var isWidgetDark = false
         try {
             val userPrefs = com.ari.streamer.data.UserPreferences(context)
-            val bgColorHex = userPrefs.widget1BgColorFlow.first()
-            val opacity = userPrefs.widget1OpacityFlow.first()
-            val color = android.graphics.Color.parseColor(bgColorHex)
-            // Auto themed by system
-            // Opacity handled natively or ignored
+            val appTheme = userPrefs.themeModeFlow.first()
+            val currentNightMode = android.content.res.Resources.getSystem().configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+            val isSystemDark = currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            isWidgetDark = when (appTheme) {
+                com.ari.streamer.data.AppTheme.DARK -> true
+                com.ari.streamer.data.AppTheme.LIGHT -> false
+                else -> isSystemDark
+            }
         } catch (e: Exception) {
-            // Auto themed by system
-            // Opacity handled natively or ignored
+            val currentNightMode = android.content.res.Resources.getSystem().configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK
+            isWidgetDark = currentNightMode == android.content.res.Configuration.UI_MODE_NIGHT_YES
         }
+
+        val bgColor = if (isWidgetDark) android.graphics.Color.parseColor("#151517") else android.graphics.Color.parseColor("#EFEFF4")
+        val textColorPrimary = if (isWidgetDark) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#1C1B1F")
+        val textColorSecondary = if (isWidgetDark) android.graphics.Color.parseColor("#A0A0A5") else android.graphics.Color.parseColor("#49454F")
+        val iconTint = if (isWidgetDark) android.graphics.Color.WHITE else android.graphics.Color.parseColor("#222222")
+
+        views.setInt(R.id.widget_bg_shape, "setColorFilter", bgColor)
+        try { views.setTextColor(R.id.widget_title, textColorPrimary) } catch (e: Exception) {}
+        try { views.setTextColor(R.id.widget_artist, textColorSecondary) } catch (e: Exception) {}
+        try { views.setInt(R.id.widget_btn_play_pause, "setColorFilter", iconTint) } catch (e: Exception) {}
+        try { views.setInt(R.id.widget_btn_next, "setColorFilter", iconTint) } catch (e: Exception) {}
+        try { views.setInt(R.id.widget_btn_prev, "setColorFilter", iconTint) } catch (e: Exception) {}
 
         // Handle "No Active Station" name fallback
         val displayTitle = if (title == "No Active Station") "AltaVox Radio" else title
@@ -464,5 +479,7 @@ class RadioWidgetProvider : AppWidgetProvider() {
         userPrefs.setLastPlayedStationId(station.id)
     }
 }
+
+
 
 
