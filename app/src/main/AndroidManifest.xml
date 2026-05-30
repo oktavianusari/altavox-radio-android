@@ -126,6 +126,23 @@
                 android:resource="@xml/lite_radio_widget_info" />
         </receiver>
 
+        <receiver
+            android:name=".widget.FavouriteListWidgetProvider"
+            android:label="Favourite List"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.ari.streamer.widget.favouritelist.ACTION_PLAY_PAUSE" />
+                <action android:name="com.ari.streamer.widget.favouritelist.ACTION_NEXT" />
+                <action android:name="com.ari.streamer.widget.favouritelist.ACTION_PREVIOUS" />
+                <action android:name="com.ari.streamer.widget.favouritelist.ACTION_PLAY_STATION" />
+                <action android:name="com.ari.streamer.widget.favouritelist.ACTION_UPDATE_STATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/favourite_list_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

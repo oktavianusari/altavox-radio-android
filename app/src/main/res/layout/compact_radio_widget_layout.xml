@@ -54,7 +54,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="AltaVox Radio"
-                    android:textColor="#FFFFFF"
+                    android:textColor="@color/widget_text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
@@ -65,7 +65,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:text="MP3 • 128 kbps"
-                    android:textColor="#A0A0A5"
+                    android:textColor="@color/widget_text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
         </LinearLayout>
@@ -88,7 +88,7 @@
                 android:scaleType="fitCenter"
                 android:padding="7dp"
                 android:layout_marginEnd="2dp"
-                android:src="@drawable/ic_widget_prev" />
+                android:src="@drawable/ic_widget_prev" android:tint="@color/widget_icon_tint" />
 
             <!-- Play/Pause Button -->
             <ImageView
@@ -98,7 +98,7 @@
                 android:scaleType="fitCenter"
                 android:padding="3dp"
                 android:layout_marginEnd="2dp"
-                android:src="@drawable/ic_widget_play" />
+                android:src="@drawable/ic_widget_play" android:tint="@color/widget_icon_tint" />
 
             <!-- Next Button -->
             <ImageView
@@ -107,8 +107,10 @@
                 android:layout_height="38dp"
                 android:scaleType="fitCenter"
                 android:padding="7dp"
-                android:src="@drawable/ic_widget_next" />
+                android:src="@drawable/ic_widget_next" android:tint="@color/widget_icon_tint" />
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>
+
+
 

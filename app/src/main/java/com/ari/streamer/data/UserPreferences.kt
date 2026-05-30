@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -42,6 +43,7 @@ class UserPreferences(private val context: Context) {
         val APP_LANGUAGE = stringPreferencesKey("app_language")
         val LAST_PLAYED_STATION_ID = androidx.datastore.preferences.core.longPreferencesKey("last_played_station_id")
         val M3U_URL = stringPreferencesKey("m3u_url")
+        val M3U_URLS = stringSetPreferencesKey("m3u_urls")
         val ALARM_ENABLED = booleanPreferencesKey("alarm_enabled")
         val ALARM_HOUR = androidx.datastore.preferences.core.intPreferencesKey("alarm_hour")
         val ALARM_MINUTE = androidx.datastore.preferences.core.intPreferencesKey("alarm_minute")
@@ -106,6 +108,10 @@ class UserPreferences(private val context: Context) {
 
     val m3uUrlFlow: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[M3U_URL] ?: "https://pastebin.com/raw/i4YM5tAL"
+    }
+
+    val m3uUrlsFlow: Flow<Set<String>> = context.dataStore.data.map { preferences ->
+        preferences[M3U_URLS] ?: setOf("https://pastebin.com/raw/i4YM5tAL")
     }
 
     val alarmEnabledFlow: Flow<Boolean> = context.dataStore.data.map { preferences ->
@@ -203,6 +209,46 @@ class UserPreferences(private val context: Context) {
     suspend fun setM3uUrl(url: String) {
         context.dataStore.edit { preferences ->
             preferences[M3U_URL] = url
+            val currentUrls = preferences[M3U_URLS]?.toMutableSet() ?: mutableSetOf("https://pastebin.com/raw/i4YM5tAL")
+            if (!currentUrls.contains(url)) {
+                currentUrls.add(url)
+                if (currentUrls.size > 10) {
+                    currentUrls.remove(currentUrls.first())
+                }
+                preferences[M3U_URLS] = currentUrls
+            }
+        }
+    }
+
+    suspend fun addM3uUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            val currentUrls = preferences[M3U_URLS]?.toMutableSet() ?: mutableSetOf("https://pastebin.com/raw/i4YM5tAL")
+            if (!currentUrls.contains(url)) {
+                currentUrls.add(url)
+                // Enforce max 10 URLs
+                while (currentUrls.size > 10) {
+                    val firstNonDefault = currentUrls.firstOrNull { it != "https://pastebin.com/raw/i4YM5tAL" }
+                    if (firstNonDefault != null) {
+                        currentUrls.remove(firstNonDefault)
+                    } else {
+                        currentUrls.remove(currentUrls.first())
+                    }
+                }
+                preferences[M3U_URLS] = currentUrls
+            }
+        }
+    }
+
+    suspend fun deleteM3uUrl(url: String) {
+        context.dataStore.edit { preferences ->
+            val currentUrls = preferences[M3U_URLS]?.toMutableSet() ?: mutableSetOf("https://pastebin.com/raw/i4YM5tAL")
+            if (currentUrls.contains(url)) {
+                currentUrls.remove(url)
+                preferences[M3U_URLS] = currentUrls
+            }
+            if (preferences[M3U_URL] == url) {
+                preferences[M3U_URL] = currentUrls.firstOrNull() ?: "https://pastebin.com/raw/i4YM5tAL"
+            }
         }
     }
 

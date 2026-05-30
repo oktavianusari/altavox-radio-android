@@ -87,7 +87,7 @@
                         android:layout_weight="1"
                         android:scaleType="fitCenter"
                         android:padding="8dp"
-                        android:src="@drawable/ic_widget_prev" />
+                        android:src="@drawable/ic_widget_prev" android:tint="@color/widget_icon_tint" />
 
                     <!-- Play/Pause Button Column Zone (Takes exactly 1/3 of the right section width) -->
                     <ImageView
@@ -97,7 +97,7 @@
                         android:layout_weight="1"
                         android:scaleType="fitCenter"
                         android:padding="4dp"
-                        android:src="@drawable/ic_widget_play" />
+                        android:src="@drawable/ic_widget_play" android:tint="@color/widget_icon_tint" />
 
                     <!-- Next Button Column Zone (Takes exactly 1/3 of the right section width) -->
                     <ImageView
@@ -107,7 +107,7 @@
                         android:layout_weight="1"
                         android:scaleType="fitCenter"
                         android:padding="8dp"
-                        android:src="@drawable/ic_widget_next" />
+                        android:src="@drawable/ic_widget_next" android:tint="@color/widget_icon_tint" />
 
                 </LinearLayout>
             </RelativeLayout>
@@ -214,4 +214,5 @@
         </LinearLayout>
     </RelativeLayout>
 </FrameLayout>
+
 

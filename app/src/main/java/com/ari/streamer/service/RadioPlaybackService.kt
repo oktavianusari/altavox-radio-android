@@ -8,6 +8,8 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
+import androidx.media3.common.ForwardingPlayer
+import androidx.media3.common.Player
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.core.graphics.drawable.toBitmap
@@ -137,6 +139,8 @@ class RadioPlaybackService : MediaSessionService() {
             .setHandleAudioBecomingNoisy(true)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             .build()
+            
+        player?.repeatMode = androidx.media3.common.Player.REPEAT_MODE_ALL
 
         player!!.addListener(object : androidx.media3.common.Player.Listener {
             override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
@@ -169,7 +173,7 @@ class RadioPlaybackService : MediaSessionService() {
             }
         })
 
-        mediaSession = MediaSession.Builder(this, player!!)
+        mediaSession = MediaSession.Builder(this, createForwardingPlayer(player!!))
             .setCallback(CustomMediaSessionCallback())
             .setBitmapLoader(CoilBitmapLoader())
             .build()
@@ -183,7 +187,7 @@ class RadioPlaybackService : MediaSessionService() {
                     val playWhenReady = player?.playWhenReady ?: false
                     player?.stop()
                     
-                    mediaSession?.player = castPlayer!!
+                    mediaSession?.player = createForwardingPlayer(castPlayer!!)
                     if (currentMediaItem != null) {
                         castPlayer?.setMediaItem(currentMediaItem)
                         castPlayer?.playWhenReady = playWhenReady
@@ -196,7 +200,7 @@ class RadioPlaybackService : MediaSessionService() {
                     val playWhenReady = castPlayer?.playWhenReady ?: false
                     castPlayer?.stop()
                     
-                    mediaSession?.player = player!!
+                    mediaSession?.player = createForwardingPlayer(player!!)
                     if (currentMediaItem != null) {
                         player?.setMediaItem(currentMediaItem)
                         player?.playWhenReady = playWhenReady
@@ -218,6 +222,24 @@ class RadioPlaybackService : MediaSessionService() {
             })
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+    private fun createForwardingPlayer(player: Player): ForwardingPlayer {
+        return object : ForwardingPlayer(player) {
+            override fun getAvailableCommands(): Player.Commands {
+                return super.getAvailableCommands().buildUpon()
+                    .add(Player.COMMAND_SEEK_TO_NEXT)
+                    .add(Player.COMMAND_SEEK_TO_PREVIOUS)
+                    .build()
+            }
+
+            override fun seekToNext() {
+                skipStation(true)
+            }
+
+            override fun seekToPrevious() {
+                skipStation(false)
+            }
         }
     }
     
@@ -271,6 +293,15 @@ class RadioPlaybackService : MediaSessionService() {
             putExtra("extra_format_bitrate", formatBitrate)
         }
         sendBroadcast(intentLite)
+
+        val intentFav = Intent("com.ari.streamer.widget.favouritelist.ACTION_UPDATE_STATE").apply {
+            setPackage(packageName)
+            putExtra("extra_station_name", title)
+            putExtra("extra_is_playing", isPlaying)
+            putExtra("extra_logo_url", logoUrl)
+            putExtra("extra_format_bitrate", formatBitrate)
+        }
+        sendBroadcast(intentFav)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -438,6 +469,23 @@ class RadioPlaybackService : MediaSessionService() {
     }
 
     private inner class CustomMediaSessionCallback : MediaSession.Callback {
+        
+        override fun onConnect(
+            session: MediaSession,
+            controller: MediaSession.ControllerInfo
+        ): MediaSession.ConnectionResult {
+            val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS
+            val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
+                .add(androidx.media3.common.Player.COMMAND_SEEK_TO_NEXT)
+                .add(androidx.media3.common.Player.COMMAND_SEEK_TO_PREVIOUS)
+                .build()
+                
+            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
+                .setAvailableSessionCommands(sessionCommands)
+                .setAvailablePlayerCommands(playerCommands)
+                .build()
+        }
+
         override fun onAddMediaItems(
             mediaSession: MediaSession,
             controller: MediaSession.ControllerInfo,

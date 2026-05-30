@@ -88,6 +88,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val m3uUrl = userPreferences.m3uUrlFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "https://pastebin.com/raw/i4YM5tAL")
 
+    val m3uUrls = userPreferences.m3uUrlsFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), setOf("https://pastebin.com/raw/i4YM5tAL"))
+
     val alarmEnabled = userPreferences.alarmEnabledFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
@@ -195,6 +198,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             val intent = android.content.Intent(context, com.ari.streamer.widget.LiteRadioWidgetProvider::class.java).apply {
                 action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
                 putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids4)
+            }
+            context.sendBroadcast(intent)
+        }
+
+        // Favourite List Widget
+        val component5 = android.content.ComponentName(context, com.ari.streamer.widget.FavouriteListWidgetProvider::class.java)
+        val ids5 = widgetManager.getAppWidgetIds(component5)
+        if (ids5.isNotEmpty()) {
+            val intent = android.content.Intent(context, com.ari.streamer.widget.FavouriteListWidgetProvider::class.java).apply {
+                action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, ids5)
             }
             context.sendBroadcast(intent)
         }
@@ -361,7 +375,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun setM3uUrl(url: String) {
-        viewModelScope.launch { userPreferences.setM3uUrl(url) }
+        viewModelScope.launch {
+            userPreferences.setM3uUrl(url)
+        }
+    }
+
+    fun addM3uUrl(url: String) {
+        viewModelScope.launch {
+            userPreferences.addM3uUrl(url)
+        }
+    }
+
+    fun deleteM3uUrl(url: String) {
+        viewModelScope.launch {
+            userPreferences.deleteM3uUrl(url)
+        }
     }
 
     suspend fun importFromM3u(inputStream: InputStream) = withContext(Dispatchers.IO) {

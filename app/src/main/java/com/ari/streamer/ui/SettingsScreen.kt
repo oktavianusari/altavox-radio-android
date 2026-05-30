@@ -12,6 +12,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.HelpOutline
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,7 +56,9 @@ fun SettingsScreen(
     var localWidget2Opacity by remember(widget2Opacity) { mutableStateOf(widget2Opacity) }
     
     val savedM3uUrl by viewModel.m3uUrl.collectAsState()
+    val savedM3uUrls by viewModel.m3uUrls.collectAsState()
     var m3uUrl by remember(savedM3uUrl) { mutableStateOf(savedM3uUrl) }
+    var showM3uCrudDialog by remember { mutableStateOf(false) }
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var categoryToEdit by remember { mutableStateOf<com.ari.streamer.data.Category?>(null) }
     var categoryInputName by remember { mutableStateOf("") }
@@ -123,6 +127,13 @@ fun SettingsScreen(
                 } else {
                     Text(stringResource(R.string.update_m3u_button))
                 }
+            }
+
+            OutlinedButton(
+                onClick = { showM3uCrudDialog = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Manage M3U URLs")
             }
 
             Divider()
@@ -354,6 +365,84 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showWarningDialog = false }) {
                     Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    if (showM3uCrudDialog) {
+        var newUrlInput by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { showM3uCrudDialog = false },
+            title = { Text("Manage M3U URLs") },
+            text = {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        OutlinedTextField(
+                            value = newUrlInput,
+                            onValueChange = { newUrlInput = it },
+                            label = { Text("New M3U URL") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = {
+                            if (newUrlInput.isNotBlank()) {
+                                if (savedM3uUrls.size < 10) {
+                                    viewModel.addM3uUrl(newUrlInput.trim())
+                                    newUrlInput = ""
+                                } else {
+                                    Toast.makeText(context, "Maximum 10 URLs allowed", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }) {
+                            Icon(Icons.Filled.Add, contentDescription = "Add")
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Saved URLs (${savedM3uUrls.size}/10)", style = MaterialTheme.typography.labelMedium)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 200.dp)
+                            .verticalScroll(rememberScrollState())
+                    ) {
+                        savedM3uUrls.forEach { url ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        viewModel.setM3uUrl(url)
+                                        m3uUrl = url
+                                        showM3uCrudDialog = false
+                                    }
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = url == savedM3uUrl,
+                                    onClick = {
+                                        viewModel.setM3uUrl(url)
+                                        m3uUrl = url
+                                    }
+                                )
+                                Text(
+                                    text = url,
+                                    modifier = Modifier.weight(1f),
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                IconButton(onClick = { viewModel.deleteM3uUrl(url) }) {
+                                    Icon(Icons.Filled.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.error)
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showM3uCrudDialog = false }) {
+                    Text(stringResource(R.string.close_btn))
                 }
             }
         )

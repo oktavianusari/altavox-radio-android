@@ -195,11 +195,11 @@ class RadioWidgetProvider : AppWidgetProvider() {
             val bgColorHex = userPrefs.widget1BgColorFlow.first()
             val opacity = userPrefs.widget1OpacityFlow.first()
             val color = android.graphics.Color.parseColor(bgColorHex)
-            views.setInt(R.id.widget_bg_shape, "setColorFilter", color)
-            views.setInt(R.id.widget_bg_shape, "setImageAlpha", (opacity * 255).toInt())
+            // Auto themed by system
+            // Opacity handled natively or ignored
         } catch (e: Exception) {
-            views.setInt(R.id.widget_bg_shape, "setColorFilter", android.graphics.Color.parseColor("#151517"))
-            views.setInt(R.id.widget_bg_shape, "setImageAlpha", (0.9f * 255).toInt())
+            // Auto themed by system
+            // Opacity handled natively or ignored
         }
 
         // Handle "No Active Station" name fallback
@@ -464,4 +464,5 @@ class RadioWidgetProvider : AppWidgetProvider() {
         userPrefs.setLastPlayedStationId(station.id)
     }
 }
+
 
